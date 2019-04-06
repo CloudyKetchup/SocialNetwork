@@ -1,14 +1,20 @@
 package com.krypton.snetwork.repository;
 
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
+import com.krypton.snetwork.model.User;
+import java.util.Optional;
 
-public interface UserRepository extends Repository<User, Long> {
-    
-    @Query("SELECT user FROM users where user.id = :id")
-    User findById(@Param("id") Long id);
+public interface UserRepository extends JpaRepository<User, Long> {
 
-    @Query("SELECT user FROM users where user.email = :email")
-    User findByEmail(@Param("email") String email);
+    @Override
+    Optional<User> findById(@Param("id") Long id);
+
+    @Query(value = "SELECT email FROM users where users.email = :email",nativeQuery = true)
+    Optional<String> findEmail(@Param("email") String email);
+
+    @Query(value = "SELECT * FROM users where users.email = :email",nativeQuery = true)
+    Optional<User> findByEmail(@Param("email") String email);
+
 }

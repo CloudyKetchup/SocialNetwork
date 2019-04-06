@@ -1,30 +1,29 @@
 package com.krypton.snetwork.model;
 
 import lombok.Data;
-
 import javax.persistence.*;
 
-@Entity
 @Data
+@Entity
 @Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
+    @Column(name = "password", nullable = false)
     private String password;
-    
-    public Boolean loggedIn = false;
+    @Transient
+    public static Boolean loggedIn = false;
 
-    private static User instance;
+    public User(){}
 
-    private User(){}
-
-    public static User getInstance(){
-    	if (instance == null) {
-    		instance = new User();
-    	}
-    	return instance;
+    public User(String username, String email, String password){
+        this.username = username;
+        this.email    = email;
+        this.password = password;
     }
 }
