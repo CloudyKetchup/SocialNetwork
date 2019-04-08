@@ -16,18 +16,35 @@
         </div>
         <div class="nav-wrapper">
             <ul>
-                <li><a id="search"><i class="fas fa-search"></i></a></li>
+                <li>
+                    <a id="search"><i class="fas fa-search"></i></a>
+                </li>
             </ul>
         </div>
     </nav>
     <div class="main-container">
-		<div class="friends-list">
-			<span style="color: #323232;">Friends</span>
+        <div id="create-group-dialog">
+            <span id="close"><i class="fas fa-times-circle"></i></span>
+            <span style="color: white">Create group</span>
+            <form method='POST' id="group-form">
+                <input placeholder="Group name" type="text" id="group-name">
+            </form>
+            <span id="field-error"></span>
+            <button id="create-group-submit">Submit</button>
+        </div>
+        <div class="friends-list" style="left: 0px;">
+			<span>Friends</span>
 		</div>
-		<div class="feed"></div>
+		<div class="feed">
+            
+        </div>
+        <div class="groups-list" style="right: 0px;">
+            <button id="create-group"><i class="fas fa-plus"></i></button>
+            <span>Groups</span>
+        </div>
 	</div>
 </body>
 <script type="text/javascript" src="/js/index.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 </html>

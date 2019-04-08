@@ -45,6 +45,23 @@ nav ul li a:hover {
 	color: grey;
 	transition: 0.2s;
 }
+button {
+	border: none;
+	outline: none;
+	border-radius: 5px;
+	transition: 0.5s;
+}
+button:hover {
+	cursor: pointer;
+}
+input {
+	background-color: #4f4f4f;
+	color: white;
+	padding: 10px;
+	border-radius: 5px;
+	border: none;
+	outline: none;
+}
 .nav-wrapper {
 	height: 100%;
 	width: 40%;
@@ -69,9 +86,10 @@ nav ul li a:hover {
 	width: 100%;
 	padding-top: 2%;
 	padding-bottom: 2%;
+	position: relative;
 }
-.friends-list {
-	height: 88%;
+.friends-list,.groups-list {
+	height: 95%;
 	width: 20%;
 	border-radius: 5px;
 	background-color: white;
@@ -79,10 +97,64 @@ nav ul li a:hover {
 	padding: 10px;
 	position: absolute;
 }
+.friends-list,.groups-list > span {
+	color : #323232;
+	position: absolute;
+}
 .feed {
-	left: 22%;
+    left: 22%;
+    bottom: 1%;
     height: 88%;
-    width: 77%;
+    width: 56%;
     border-radius: 5px;
     position: absolute;
+}
+#group-form {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+#create-group {
+	background: none;
+	height: 20px;
+	width: 20px;
+	float: right;
+	margin-right: 10px;
+}
+#create-group-dialog {
+	display: none;
+	background-color: #323232;
+	border-radius: 5px;
+	height: 200px;
+	width: 300px;
+	padding: 20px;
+	left: 40%;
+	top: 10%;
+	text-align: center;
+	z-index:1;
+	position: absolute;
+	animation-name: animatetop;
+	animation-duration: 0.2s;
+}
+#create-group-submit {
+	background-color: #F44256;
+	padding: 10px;
+	border-radius: 100px;
+	color: white;
+}
+#field-error {
+	display: none;
+	color: red;
+}
+#close {
+	left: 5px;
+	top: 5px;
+	color: #F44256;
+	position: absolute;
+}
+#close:hover {
+	cursor: pointer;
+}
+@keyframes animatetop {
+  	from {top: -300px; opacity: 0}
+  	to {top: 10% ; opacity: 1}
 }
