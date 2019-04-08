@@ -1,14 +1,16 @@
 package com.krypton.snetwork.controllers;
 
-import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.krypton.snetwork.model.User;
 import com.krypton.snetwork.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Optional;
+import java.util.Map;
 
 @Controller
 public class AuthController{
@@ -16,43 +18,47 @@ public class AuthController{
 	@Autowired
 	private UserRepository userRepository;
 
-	@RequestMapping(value = "/auth",method = RequestMethod.GET, produces = "text/html")
-    public String auth() {
+	@RequestMapping(
+		value = "/auth",
+		method = RequestMethod.GET,
+		produces = "text/html"
+	)
+	public String auth() {
 		return "auth.html";
     }
 
-    @RequestMapping(value = "/account",method = RequestMethod.GET, produces = "text/html")
+    @RequestMapping(
+    	value = "/account",
+    	method = RequestMethod.GET,
+    	produces = "text/html"
+    )
     public String account() {
     	return "account.html";
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @RequestMapping("/login")
 	@ResponseBody
 	public HashMap<String, Object> login(@RequestBody HashMap<String, String> formData) {
-		// data from post
 		String email = formData.get("email");
 		String password = formData.get("password");
 		// body for response
 		HashMap<String, Object> response = new HashMap<>();
-		// get user from database by email
+		// get user from database
 		User dbUser = loadUserFromDatabase(email);
-		// check if user with that email exist in database
 		if (dbUser != null) {
-			// check password match
 			if (dbUser.getPassword().equals(password)) {
-				// json body
 				response.put("response", "login success");
 				response.put("userBody", dbUser);
 			}else {
 				response.put("response","wrong password");
-			}	
+			}
 		}else {
 			response.put("response","email not exist");
 		}
 		return response;
 	}
 
-	@RequestMapping(value = "/register", method = RequestMethod.POST)
+	@RequestMapping("/register")
 	@ResponseBody
 	public Map<String, String> register(@RequestBody HashMap<String, String> formData) {
 	    HashMap<String, String> response = new HashMap<>();
@@ -67,16 +73,12 @@ public class AuthController{
 	}
 	// check if email already exist in database
 	private boolean userExist(String email) {
-		Optional<String> findedEmail = userRepository.findEmail(email);
-		if (findedEmail.isPresent()) {
-			return true;
-		}
-		return false;
+		return userRepository.findEmail(email).isPresent();
 	}
 
 	// load user from database
 	private User loadUserFromDatabase(String email) {
-		return userRepository.findByEmail(email).get();	
+		return userRepository.findByEmail(email);
 	}
 	// save new user account to database
 	private void saveUserToDatabase(HashMap<String, String> formData) {
