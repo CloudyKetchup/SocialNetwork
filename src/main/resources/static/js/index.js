@@ -7,7 +7,7 @@ document.getElementById('close').onclick = () => {
 }
 
 document.getElementById('create-group-submit').onclick = () => {
-  if ($('#group-name').val() != '') {
+  if ($('#group-name').val() !== '') {
     createGroup()
   }else {
     $('#field-error')
@@ -20,12 +20,14 @@ document.getElementById('group-name').onkeypress = () => {
   $('#field-error').html('')
 }
 
+// get user feed,friends and groups on startup 
 function getData() {
-  if (Cookies.get('account-data') != undefined) {
+  // send post request if cookie with user data exist
+  if (Cookies.get('account-data') !== undefined) {
     dataPOST()
   }
 }
-
+// request user data json
 function dataPOST() {
   $.ajax({
     type : 'POST',
@@ -38,13 +40,14 @@ function dataPOST() {
     }
   })
 }
-
+// login request
 function loginTrigger() {
   const email    = $('#login-email')
   const password = $('#login-password')
+  // login procedure
   login(email,password)
 };
-
+// register request
 function registerTrigger() {
   const username = $('#name-field')
   const email    = $('#register-email')
@@ -60,9 +63,9 @@ function registerTrigger() {
       'password': password.val()
     }),
     success : function(result) {
-    console.log(result)
       const response = result['response']
-      if (response == 'registered') {
+      if (response === 'registered') {
+        // login to new account if success
         login(email,password)
       }else {
         username.val('')
@@ -72,6 +75,7 @@ function registerTrigger() {
     }
   })
 }
+// login request
 function login(emailfield,passwordfield) {
   $.ajax({
     type : 'POST',
@@ -83,24 +87,28 @@ function login(emailfield,passwordfield) {
       'password': passwordfield.val()
     }),
     success : function(result) {
+      // handle json response after login
       loginResponseHandler(result,emailfield,passwordfield)
     }
   })
 }
 
 function loginResponseHandler(result,emailfield,passwordfield) {
-  if(result['response'] == 'login success'){
-    user = result['userBody']
-    setCookie(user['username'],user['email'],user['password'])
+  if(result['response'] === 'login success'){
+    // create cookie with user data(username,email,password)
+    setCookie(result['username'],result['email'],result['password'])
+    // redirect to home page
     window.location.replace('/')
-  }else if (result['response'] == 'wrong password'){
+  }else if (result['response'] === 'wrong password'){
     emailfield.val('')
     passwordfield.val('')
   }
 }
-
+// create cookie
 function setCookie(username,email,password) {
+  // remove old cookie
   Cookies.remove('account-data',{ path : ''})
+  // create new cookie
   Cookies.set('account-data', {
     'username': username,
     'email': email,
@@ -108,7 +116,7 @@ function setCookie(username,email,password) {
     'path': ''
   });
 }
-
+// new group request
 function createGroup() {
   $.ajax({
     type : 'POST',
@@ -123,8 +131,4 @@ function createGroup() {
       console.log(result)
     }
   })
-}
-
-function findUser() {
-
 }

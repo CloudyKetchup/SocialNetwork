@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Controller
 public class AuthController{
-	
+
 	@Autowired
 	private UserRepository userRepository;
 
@@ -44,11 +44,13 @@ public class AuthController{
 		// body for response
 		HashMap<String, Object> response = new HashMap<>();
 		// get user from database
-		User dbUser = loadUserFromDatabase(email);
+        User dbUser = loadUserFromDatabase(email);
 		if (dbUser != null) {
 			if (dbUser.getPassword().equals(password)) {
 				response.put("response", "login success");
-				response.put("userBody", dbUser);
+				response.put("username", dbUser.getUsername());
+				response.put("email",dbUser.getEmail());
+				response.put("password",dbUser.getPassword());
 			}else {
 				response.put("response","wrong password");
 			}

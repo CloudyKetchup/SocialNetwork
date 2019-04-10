@@ -2,11 +2,15 @@ package com.krypton.snetwork.controllers;
 
 import com.krypton.snetwork.model.Group;
 import com.krypton.snetwork.model.User;
-import com.krypton.snetwork.repository.*;
+import com.krypton.snetwork.repository.GroupRepository;
+import com.krypton.snetwork.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 @RestController
 public class HomeController {
@@ -19,7 +23,9 @@ public class HomeController {
 
 	@RequestMapping("/user_data")
 	public HashMap<String, Object> userData(@RequestBody HashMap<String, String> post) {
-		return userData(getUser(post.get("email")));
+        HashMap<String, Object> response = new HashMap<>();
+	    response.put("groups",getUser(post.get("email")).getGroups());
+        return response;
 	}
 
 	@RequestMapping("/new_group")
@@ -54,24 +60,26 @@ public class HomeController {
 		return groupRepository.findByName(groupName) != null;
 	}
 	// insert new group to database
-	private void insertGroup(String groupName,String admin) {
-		groupRepository.save(createGroup(groupName,admin));
+	private void insertGroup(String groupName, String admin) {
+		User user = getUser(admin);
+		Group group = createGroup(groupName, admin);
+		addGroup(group, user);
+		addMember(group, user);
 	}
 	// create group object
-	private Group createGroup(String groupName,String admin) {
+	private Group createGroup(String groupName, String admin) {
 		// create group with name and admin(by default admin is who created room)
-		Group group = new Group(groupName,getUser(admin));
-		// add admin to group members
-		memberToGroup(group,admin);
-		return group;
+		return new Group(groupName,getUser(admin));
 	}
-	// add member to a group
-	private void memberToGroup(Group group, String username) {
-		group.getMembers().add(getUser(username));
+	// add group to user groups list
+	private void addGroup(Group group, User member) {
+		group.addMember(member);
+		groupRepository.save(group);
 	}
-	// add group to a member
-	private void groupToMember(User member, String groupname) {
-		member.getGroups().add(getGroup(groupname));
+	// add member to group members list
+	private void addMember(Group group, User member) {
+		member.addGroup(group);
+		userRepository.save(member);
 	}
 	// get user entity object from database
 	private User getUser(String email) {
