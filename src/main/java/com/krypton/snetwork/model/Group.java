@@ -13,8 +13,8 @@ import java.util.*;
 public class Group {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
 	@Column(name = "name", nullable = false, unique = true)
 	private String name;
@@ -24,8 +24,12 @@ public class Group {
 	private User admin;
 
 	@ManyToMany
-	@JsonIgnore
+    @JsonIgnore
 	private Set<User> members = new HashSet<>();
+
+	@OneToMany(cascade = CascadeType.ALL)
+    @JsonIgnore
+	private Set<Post> posts = new HashSet<>();
 
 	public Group() {}
 
@@ -36,4 +40,9 @@ public class Group {
 	public void addMember(User user) {
 		members.add(user);
 	}
+
+	public void removeMember(User user) {
+	    members.remove(user);
+    }
+
 }
