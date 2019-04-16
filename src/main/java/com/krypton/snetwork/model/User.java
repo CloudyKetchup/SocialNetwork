@@ -1,6 +1,7 @@
 package com.krypton.snetwork.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.krypton.snetwork.model.group.Group;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,13 +17,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "username", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false)
     private String password;
 
     @Transient
@@ -42,14 +43,6 @@ public class User {
         this.username = username;
         this.email    = email;
         this.password = password;
-    }
-
-    public void addGroup(Group group) {
-        groups.add(group);
-    }
-
-    public void removeGroup(Group group) {
-        groups.remove(group);
     }
 }
 
