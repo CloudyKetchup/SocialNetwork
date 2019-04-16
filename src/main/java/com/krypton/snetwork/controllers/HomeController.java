@@ -1,13 +1,12 @@
 package com.krypton.snetwork.controllers;
 
-import com.krypton.snetwork.model.Group;
-import com.krypton.snetwork.model.Post;
+import com.krypton.snetwork.model.group.Group;
+import com.krypton.snetwork.model.group.Post;
 import com.krypton.snetwork.model.User;
 import com.krypton.snetwork.repository.GroupRepository;
 import com.krypton.snetwork.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.util.HashMap;
 
@@ -22,9 +21,16 @@ public class HomeController {
 
 	@RequestMapping("/user_data")
 	public HashMap<String, Object> userData(@RequestBody HashMap<String, String> account) {
-        HashMap<String, Object> response = new HashMap<>();
-	    response.put("groups",getUser(account.get("email")).getGroups());
-        return response;
+	    return new HashMap<>(){{
+			put("groups",getUser(account.get("email")).getGroups());
+		}};
+	}
+
+	@RequestMapping("/group_data")
+	public HashMap<String, Object> groupData(@RequestBody  HashMap<String, String> group) {
+		return new HashMap<>(){{
+			put("group",getGroup(Long.valueOf(group.get("id"))));
+		}};
 	}
 
 	@RequestMapping("/new_group")
@@ -46,22 +52,33 @@ public class HomeController {
 	@RequestMapping("/new_post")
 	public HashMap<String, String> newPost(@RequestBody HashMap<String, String> post) {
 		// group where to save new post
-		Group group = groupRepository.findById(Long.valueOf(post.get("group_id"))).get();
+		Group group = getGroup(Long.valueOf(post.get("group_id")));
 		// get author entity from database
 		User author = getUser(post.get("author"));
 		// add new post to group
-		group.getPosts().add(new Post(post.get("content"),author));
+		group.getPosts().add(new Post(post.get("content"),author,Long.valueOf(post.get("time"))));
 		// update group in database
 		groupRepository.save(group);
 		return post;
 	}
 
-	@RequestMapping("/group_data")
-    public HashMap<String, Object> groupData(@RequestBody  HashMap<String, String> group) {
-        HashMap<String, Object> response = new HashMap<>();
-        response.put("members",groupRepository.findById(Long.valueOf(group.get("id"))).get().getMembers());
-	    return response;
-    }
+	@RequestMapping("/add_like")
+	public void addLike(@RequestBody HashMap<String, String> like) {
+		getPost(like).getLikes()
+			.add(Long.valueOf(like.get("user_id")));
+		groupRepository.save(
+			getGroup(Long.valueOf(like.get("group_id")))
+		);
+	}
+
+	@RequestMapping("/remove_like")
+	public void removeLike(@RequestBody HashMap<String, String> like) {
+		getPost(like).getLikes()
+			.remove(Long.valueOf(like.get("user_id")));
+		groupRepository.save(
+			getGroup(Long.valueOf(like.get("group_id")))
+		);
+	}
 
 	@RequestMapping("/add_member")
 	public HashMap<String, String> addMember(@RequestBody HashMap<String, String> member) {
@@ -76,28 +93,28 @@ public class HomeController {
 	}
 	// check if group with name exist
 	private boolean groupExist(String groupName) {
-		return groupRepository.findByName(groupName) != null;
+		return getGroup(groupName) != null;
 	}
 	// insert new group to database
 	private void insertGroup(String groupName, String admin) {
-		User user = getUser(admin);
+		User user   = getUser(admin);
 		Group group = createGroup(groupName, admin);
-		addGroup(group, user);
-		addMember(group, user);
+		addGroupMember(group, user);
+		addMemberGroup(group, user);
 	}
 	// create group object
 	private Group createGroup(String groupName, String admin) {
 		// create group with name and admin(by default admin is who created room)
 		return new Group(groupName,getUser(admin));
 	}
-	// add group to user groups list
-	private void addGroup(Group group, User member) {
-		group.addMember(member);
+	// add member to group
+	private void addGroupMember(Group group, User member) {
+		group.getMembers().add(member);
 		groupRepository.save(group);
 	}
-	// add member to group members list
-	private void addMember(Group group, User member) {
-		member.addGroup(group);
+	// add group to member
+	private void addMemberGroup(Group group, User member) {
+		member.getGroups().add(group);
 		userRepository.save(member);
 	}
 	// get user entity object from database
@@ -108,10 +125,20 @@ public class HomeController {
 	private Group getGroup(String name) {
 		return groupRepository.findByName(name);
 	}
-	// get user data from database
-	private HashMap<String, Object> userData(User user) {
-		HashMap<String, Object> response = new HashMap<>(1);
-		response.put("groups",user.getGroups());
-		return response;
+	private Group getGroup(Long id) {
+		return groupRepository.findById(id).get();
+	}
+	// find post by id
+	private Post getPost(HashMap<String, String> requestBody) {
+		final Post[] posts = new Post[1];
+		// get group where that contains post
+		getGroup(Long.valueOf(requestBody.get("group_id")))
+			// find post by id
+			.getPosts().forEach(post -> {
+				if (post.getId().equals(Long.valueOf(requestBody.get("post_id")))){
+					posts[0] = post;
+				}
+			});
+		return posts[0];
 	}
 }
