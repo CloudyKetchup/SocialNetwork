@@ -42,20 +42,24 @@ public class AuthController{
 		String email = formData.get("email");
 		String password = formData.get("password");
 		// body for response
-		HashMap<String, Object> response = new HashMap<>();
+		HashMap<String, Object> response;
 		// get user from database
-        User dbUser = loadUserFromDatabase(email);
+        User dbUser = loadUser(email);
 		if (dbUser != null) {
 			if (dbUser.getPassword().equals(password)) {
-				response.put("response", "login success");
-				response.put("username", dbUser.getUsername());
-				response.put("email",dbUser.getEmail());
-				response.put("password",dbUser.getPassword());
+				response = new HashMap<>(){{
+					put("response", "login success");
+					put("account", dbUser);
+				}};
 			}else {
-				response.put("response","wrong password");
+				response = new HashMap<>(){{
+					put("response","wrong password");
+				}};
 			}
 		}else {
-			response.put("response","email not exist");
+			response = new HashMap<>(){{
+				put("response","email not exist");
+			}};
 		}
 		return response;
 	}
@@ -68,7 +72,7 @@ public class AuthController{
 	    if (userExist(formData.get("email"))) {
 	    	response.put("response","account exist");
 	    }else {
-	    	saveUserToDatabase(formData);
+	    	saveUser(formData);
 	    	response.put("response","registered");
 		}
 		return response;
@@ -79,11 +83,11 @@ public class AuthController{
 	}
 
 	// load user from database
-	private User loadUserFromDatabase(String email) {
+	private User loadUser(String email) {
 		return userRepository.findByEmail(email);
 	}
 	// save new user account to database
-	private void saveUserToDatabase(HashMap<String, String> formData) {
+	private void saveUser(HashMap<String, String> formData) {
 		// save user to database
 		userRepository.save(
 			new User(
