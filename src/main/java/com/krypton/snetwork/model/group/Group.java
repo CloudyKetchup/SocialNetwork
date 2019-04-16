@@ -1,6 +1,5 @@
 package com.krypton.snetwork.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,19 +15,17 @@ public class Group {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-	@Column(name = "name", nullable = false, unique = true)
+	@Column(nullable = false, unique = true)
 	private String name;
 
 	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "admin_id")
+	@Column
 	private User admin;
 
 	@ManyToMany
-    @JsonIgnore
 	private Set<User> members = new HashSet<>();
 
 	@OneToMany(cascade = CascadeType.ALL)
-    @JsonIgnore
 	private Set<Post> posts = new HashSet<>();
 
 	public Group() {}
@@ -37,12 +34,4 @@ public class Group {
 		this.name  = name;
 		this.admin = admin;
 	}
-	public void addMember(User user) {
-		members.add(user);
-	}
-
-	public void removeMember(User user) {
-	    members.remove(user);
-    }
-
 }

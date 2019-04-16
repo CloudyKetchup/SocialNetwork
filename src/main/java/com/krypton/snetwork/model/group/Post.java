@@ -1,23 +1,32 @@
 package com.krypton.snetwork.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
-@Getter@Setter
+@Data
 @Entity
+@Table(name = "Posts")
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name = "content")
+    @Column
+    private Integer likes;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @Column
+    private Set<Comment> comments = new HashSet<>();
+
+    @Column
     private String content;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "author_id")
+    @Column
     private User author;
 
     public Post() {}
