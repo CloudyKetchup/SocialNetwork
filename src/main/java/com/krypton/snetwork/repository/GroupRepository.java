@@ -1,6 +1,6 @@
 package com.krypton.snetwork.repository;
 
-import com.krypton.snetwork.model.Group;
+import com.krypton.snetwork.model.group.Group;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
