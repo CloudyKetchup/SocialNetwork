@@ -1,5 +1,6 @@
-package com.krypton.snetwork.model;
+package com.krypton.snetwork.model.group;
 
+import com.krypton.snetwork.model.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,8 +20,8 @@ public class Group {
 	private String name;
 
 	@OneToOne(cascade = CascadeType.ALL)
-	@Column
-	private User admin;
+    @JoinColumn(name = "admin_id")
+    private User admin;
 
 	@ManyToMany
 	private Set<User> members = new HashSet<>();

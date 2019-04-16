@@ -1,5 +1,6 @@
-package com.krypton.snetwork.model;
+package com.krypton.snetwork.model.group;
 
+import com.krypton.snetwork.model.User;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -16,23 +17,26 @@ public class Post {
     private Long id;
 
     @Column
-    private Integer likes;
+    @ElementCollection
+    private Set<Long> likes = new HashSet<>();
 
     @OneToMany(cascade = CascadeType.ALL)
-    @Column
     private Set<Comment> comments = new HashSet<>();
 
-    @Column
+    @JoinColumn(name = "content")
     private String content;
 
-    @OneToOne(cascade = CascadeType.ALL)
     @Column
+    private Long time;
+
+    @OneToOne(cascade = CascadeType.ALL)
     private User author;
 
     public Post() {}
 
-    public Post(String content,User author) {
+    public Post(String content,User author,Long time) {
         this.content = content;
         this.author  = author;
+        this.time    = time;
     }
 }
