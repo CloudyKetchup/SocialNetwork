@@ -16,8 +16,11 @@ public class Group {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private String name;
+
+	@Column
+	private String groupImage;
 
 	@OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "admin_id")
@@ -31,8 +34,9 @@ public class Group {
 
 	public Group() {}
 
-	public Group(String name,User admin) {
+	public Group(String name,User admin,String groupImage) {
 		this.name  = name;
 		this.admin = admin;
+		this.groupImage = groupImage;
 	}
 }
