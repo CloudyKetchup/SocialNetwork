@@ -10,12 +10,11 @@ document.getElementById('create-group').onclick = () => {
 document.getElementById('close').onclick = () => {
   $('#create-group-dialog').css('display','none');
 }
-
 // action for submit button in create group dialog
 document.getElementById('create-group-submit').onclick = () => {
   if ($('#group-name').val() !== '') {
-    // create group request
-    createGroup()
+    // send group image first
+    newGroupImage("group_image")
   }else {
     // if name field is empty show error 
     $('#field-error')
@@ -152,21 +151,24 @@ function setCookie(account) {
   });
 }
 // new group request
-function createGroup() {
+function createGroup(imagePath) {
   // ajax post request
   $.ajax({
     type : 'POST',
-    contentType : 'application/json; charset=utf-8',
     url : 'http://localhost:8080/new_group',
-    data : JSON.stringify({
+    contentType : 'application/json; charset=utf-8',
+    data: JSON.stringify({
       // name value from group dialog form
-      'name' : $('#group-name').val(),
+      'name': $('#group-name').val(),
       // user email from cookie
-      'admin': getUser()['email']
+      'admin': getUser()['email'],
+      // path to group image
+      'imagepath': imagePath 
     }),
     success : (result) => {
       // check if group was created
       if (result['response'] === 'group created') {
+        // send group image
         // clear groups list
         $('.groups-box').empty()
         // update user data
@@ -174,10 +176,35 @@ function createGroup() {
       }else {
         // empty name field
         $('#group-name').val('')
-        // show error
+        // show field error
         $('#field-error')
           .css('display','block')
           .html('group already exist')
+      }
+    }
+  })
+}
+// upload image to group
+function newGroupImage(action) {
+  const formData = new FormData()
+  formData.append('image',$("#choose-group-image").prop('files')[0])
+  $.ajax({
+    type : 'POST',
+    url : 'http://localhost:8080/' + action,
+    contentType: false,
+    processData: false,
+    cache: false,
+    data : formData,
+    success : (result) => {
+      // check if image was saved succesfull
+      if (result['response'] === 'image saved') {
+        // after image uploaded create group 
+        createGroup(result['imagepath'])
+      }else {
+        // show field error
+        $('#field-error')
+          .css('display','block')
+          .html('error occurred')
       }
     }
   })
