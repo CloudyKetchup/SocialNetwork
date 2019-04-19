@@ -12,11 +12,14 @@ document.getElementById('close').onclick = () => {
 }
 // action for submit button in create group dialog
 document.getElementById('create-group-submit').onclick = () => {
+  // check if group name field is not empty and group image was selected
   if ($('#group-name').val() !== '') {
-    // send group image first
-    newGroupImage("group_image")
+    createGroup()
+  }else if ($("#choose-group-image").prop('files')[0] !== undefined){
+    $('#field-error')
+      .css('display','block')
+      .html('Image not selected')
   }else {
-    // if name field is empty show error 
     $('#field-error')
       .css('display','block')
       .html('Field cannot be empty')
@@ -49,25 +52,6 @@ function sortJsonObjects(objects) {
    }
   }
   return objects
-}
-// request user data json
-function getUserData() {
-  // ajax post request
-  $.ajax({
-    type : 'POST',
-    contentType : 'application/json; charset=utf-8',
-    url  : 'http://localhost:8080/user_data',
-    async: false,
-    data : Cookies.get('account-data'), // cookie with user data
-    success : (result) => {
-      // user groups list from request
-      const sortedGroups = sortJsonObjects(result['groups'])
-      for (i in sortedGroups) {
-        // add group div to list from right panel
-        renderGroups(sortedGroups[i])
-      }
-    }
-  })
 }
 // login request
 function loginTrigger() {
@@ -150,21 +134,23 @@ function setCookie(account) {
     'path': ''  // path to cookie
   });
 }
-// new group request
-function createGroup(imagePath) {
+// create new group request
+function createGroup() {
+  const formData = new FormData()
+  // image file
+  formData.append('image', $("#choose-group-image").prop('files')[0])
+  // group name
+  formData.append('name' , $('#group-name').val())
+  // group admin email
+  formData.append('admin', getUser()['email'])
   // ajax post request
   $.ajax({
     type : 'POST',
     url : 'http://localhost:8080/new_group',
-    contentType : 'application/json; charset=utf-8',
-    data: JSON.stringify({
-      // name value from group dialog form
-      'name': $('#group-name').val(),
-      // user email from cookie
-      'admin': getUser()['email'],
-      // path to group image
-      'imagepath': imagePath 
-    }),
+    contentType: false,
+    processData: false,
+    cache: false,
+    data : formData,
     success : (result) => {
       // check if group was created
       if (result['response'] === 'group created') {
@@ -180,31 +166,6 @@ function createGroup(imagePath) {
         $('#field-error')
           .css('display','block')
           .html('group already exist')
-      }
-    }
-  })
-}
-// upload image to group
-function newGroupImage(action) {
-  const formData = new FormData()
-  formData.append('image',$("#choose-group-image").prop('files')[0])
-  $.ajax({
-    type : 'POST',
-    url : 'http://localhost:8080/' + action,
-    contentType: false,
-    processData: false,
-    cache: false,
-    data : formData,
-    success : (result) => {
-      // check if image was saved succesfull
-      if (result['response'] === 'image saved') {
-        // after image uploaded create group 
-        createGroup(result['imagepath'])
-      }else {
-        // show field error
-        $('#field-error')
-          .css('display','block')
-          .html('error occurred')
       }
     }
   })
@@ -228,6 +189,25 @@ function getGroupData(group) {
 // return cookie data
 function getUser() {
   return JSON.parse(Cookies.get('account-data'))
+}
+// request user data json
+function getUserData() {
+  // ajax post request
+  $.ajax({
+    type : 'POST',
+    contentType : 'application/json; charset=utf-8',
+    url  : 'http://localhost:8080/user_data',
+    async: false,
+    data : Cookies.get('account-data'), // cookie with user data
+    success : (result) => {
+      // user groups list from request
+      const sortedGroups = sortJsonObjects(result['groups'])
+      for (i in sortedGroups) {
+        // add group div to list from right panel
+        renderGroups(sortedGroups[i])
+      }
+    }
+  })
 }
 // add group to groups list at right panel
 function renderGroups(group) {
@@ -424,15 +404,15 @@ function sendLike(post,action) {
 // group image in container in top right corner
 function groupContainerImage(members) {
   // group follow button text
-  let followText  = 'Follow'
+  let followText = 'Follow'
   // user email from cookie
-  const email     = getUser()['email']
+  const email    = getUser()['email']
   // check if user is following group and change follow button text
   for (i in members) {
     // check if user is in group members list
     if (members[i]['email'] === email){
       // change follow button text
-      followText  = 'Following'
+      followText = 'Following'
       break
     }
   }
@@ -445,7 +425,10 @@ function groupContainerImage(members) {
         // group image
         $('<div/>')
           .attr('class','group-image')
-          .append('<img/>'),
+          .append(
+            $('<img/>')
+              .attr('src','data:image/png;base64,' + groupData['groupImage']['image'])
+          ),
         // group follow button
         $('<button/>')
           .attr('class','group-follow')

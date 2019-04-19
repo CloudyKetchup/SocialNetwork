@@ -1,6 +1,9 @@
 package com.krypton.snetwork.model.group;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import com.krypton.snetwork.model.User;
+import com.krypton.snetwork.model.Image;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,11 +22,12 @@ public class Group {
 	@Column(nullable = false)
 	private String name;
 
-	@Column
-	private String groupImage;
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "image_id")
+	private Image groupImage;
 
 	@OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "admin_id")
+    @JoinColumn(name  = "admin_id")
     private User admin;
 
 	@ManyToMany
@@ -34,7 +38,7 @@ public class Group {
 
 	public Group() {}
 
-	public Group(String name,User admin,String groupImage) {
+	public Group(String name,User admin,Image groupImage) {
 		this.name  = name;
 		this.admin = admin;
 		this.groupImage = groupImage;

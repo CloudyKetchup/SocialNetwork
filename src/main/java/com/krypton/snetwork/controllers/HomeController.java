@@ -3,16 +3,14 @@ package com.krypton.snetwork.controllers;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.group.Post;
 import com.krypton.snetwork.model.User;
-import com.krypton.snetwork.repository.GroupRepository;
-import com.krypton.snetwork.repository.UserRepository;
+import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.io.*;
-import java.nio.file.Paths;
-import java.util.LinkedHashMap;
 
 /**
  * Controller responding for homepage
@@ -25,6 +23,9 @@ public class HomeController {
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private ImageRepository imageRepository;
 
 	private String homeFolder = System.getProperty("user.home");
 	/**
@@ -51,52 +52,29 @@ public class HomeController {
 	}
 	/**
 	 * post request for creating new group
-	 * @param group group data from request
+	 * @param image group image from form data
+	 * @param name  group name
+	 * @param admin admin email
 	 */
 	@RequestMapping("/new_group")
-	public HashMap<String, String> newGroup(@RequestBody HashMap<String, String> group) {
+	public HashMap<String, String> newGroup(
+		@RequestParam("image") MultipartFile image,
+		@RequestParam("name") String name,
+		@RequestParam("admin") String admin
+	) {
 		// response body
 		HashMap<String, String> response = new HashMap<>(1);
-		// group name
-		String name 	  = (String) group.get("name");
-		// group admin email
-		String admin 	  = (String) group.get("admin");
-		// path to group image
-		String imagePath = (String) group.get("imagepath");
 		// check if room with that name exist
 		if (groupExist(name)) {
 			response.put("response","group already exist");
 		}else {
+			// insert image to database
+			insertImage(name, image);
 			// insert group to database
-			insertGroup(name,admin,imagePath);
+			insertGroup(name, admin);
 			response.put("response","group created");
 		}
 		return response;
-	}
-	/**
-	 * post request for saving group image to local disk
-	 * and sending back file path for future group entity
-	 * @param image group image file from request 
-	 */
-	@RequestMapping(
-		value 	 = "/group_image",
-		consumes = "multipart/form-data",
-		method 	 = RequestMethod.POST
-	)
-	public HashMap<String, String> groupImage(@RequestParam("image") MultipartFile image) {
-		// save file locally and assign file path
-		String filePath = saveFile(image);
-		System.out.println(filePath);
-		return new HashMap<>(){{
-			// check if file was saved
-			if (filePath != null) {
-				put("response","image saved");
-				// send back file path
-				put("imagepath",filePath);
-			}else {
-				put("response","error occurred");
-			}
-		}};
 	}
 	/**
 	 * post request for new group post
@@ -109,13 +87,16 @@ public class HomeController {
 		// get author entity from database
 		User author = getUser(post.get("author"));
 		// add new post to group
-		group.getPosts().add(new Post(post.get("content"),author,Long.valueOf(post.get("time"))));
+		group.getPosts().add(
+			// post entity object
+			new Post(post.get("content"),author,Long.valueOf(post.get("time")))
+		);
 		// update group in database
 		groupRepository.save(group);
 	}
 	/**
-	 * add like to post in group
-	 * @param like
+	 * post request for adding like to post in group
+	 * @param like group,post and id
 	 */
 	@RequestMapping("/add_like")
 	public void addLike(@RequestBody HashMap<String, String> like) {
@@ -129,8 +110,8 @@ public class HomeController {
 		);
 	}
 	/**
-	 * remove like from post in group
-	 * @param like
+	 * post request for removing like from post in group
+	 * @param like group,post and id
 	 */
 	@RequestMapping("/remove_like")
 	public void removeLike(@RequestBody HashMap<String, String> like) {
@@ -143,7 +124,7 @@ public class HomeController {
 			getGroup(Long.valueOf(like.get("group_id")))
 		);
 	}
-	
+
 	@RequestMapping("/add_member")
 	public HashMap<String, String> addMember(@RequestBody HashMap<String, String> member) {
 		// response body
@@ -151,48 +132,123 @@ public class HomeController {
 		return member;
 	}
 
-	@RequestMapping("/find_user")
+	@RequestMapping("/find_member")
 	public User findUser(@RequestBody HashMap<String, String> user) {
 		return userRepository.findByName(user.get("username"));
 	}
-	// check if group with name exist
-	private boolean groupExist(String groupName) {
-		return getGroup(groupName) != null;
+	/**
+	 * check if group with selected name exist
+	 * @param name group name
+	 */
+	private boolean groupExist(String name) {
+		return getGroup(name) != null;
 	}
-	// insert new group to database
-	private void insertGroup(String groupName, String admin, String groupImage) {
-		User user   = getUser(admin);
-		Group group = createGroup(groupName, admin, groupImage);
-		addGroupMember(group, user);
-		addMemberGroup(group, user);
+	/**
+	 * insert new group to database
+	 * @param name  group name
+	 * @param email admin email
+	 */
+	private void insertGroup(String name, String email) {
+		// get admin entity from database
+		User admin  = getUser(email);
+		// get group image entity from database
+		Image image = getImage(name + "-image");
+		// create group entity and return as object
+		Group group = createGroup(name, name, image);
+		// save new group entity to admin
+		saveGroupMember(group, admin);
+		// save admin entity to group
+		saveMemberGroup(group, admin);
 	}
-	// create group object
-	private Group createGroup(String groupName, String admin,String groupImage) {
-		// create group with name and admin(by default admin is who created room)
-		return new Group(groupName,getUser(admin),groupImage);
+	/**
+	 * create image entity and
+	 * insert new image to database
+	 * @param name  group name
+	 * @param image image file
+	 */
+	private void insertImage(String name, MultipartFile image) {
+		try {
+			// group image entity
+			Image imageEntity = createImage(name, image);
+			// save image to datbase
+			imageRepository.save(imageEntity);
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-	// add member to group
-	private void addGroupMember(Group group, User member) {
+	/**
+	 * create group entity object
+	 * @param name  group name
+	 * @param admin admin email
+	 * @param image group image entity
+	 */
+	private Group createGroup(String name, String admin,Image image) {
+		// group entity
+		return new Group(name,getUser(admin),image);
+	}
+	/** 
+	 * create image entity object
+	 * @param name  group name
+	 * @param image image file
+	 */
+	private Image createImage(String name,MultipartFile image) throws IOException {
+		return new Image(
+			name + "-image",		// image file name
+			image.getContentType(),	// file type
+			image.getBytes()		// file bytes
+		);
+	}
+	/**
+	 * add member entity to group members list
+	 * @param group  entity
+	 * @param member entity
+	 */
+	private void saveGroupMember(Group group, User member) {
 		group.getMembers().add(member);
 		groupRepository.save(group);
 	}
-	// add group to member
-	private void addMemberGroup(Group group, User member) {
+	/**
+	 * add group entity to member groups list
+	 * @param group  entity
+	 * @param member entity
+	 */
+	private void saveMemberGroup(Group group, User member) {
 		member.getGroups().add(group);
 		userRepository.save(member);
 	}
-	// get user entity object from database
+	/**
+	 * get user entity object from database by email
+	 * @param email
+	 */
 	private User getUser(String email) {
 		return userRepository.findByEmail(email);
 	}
-	// get group entity object from database
+	/**
+	 * get group entity object from database by name
+	 * @param name
+	 */
 	private Group getGroup(String name) {
 		return groupRepository.findByName(name);
 	}
+	/**
+	 * get group entity object from database by id
+	 * @param id
+	 */
 	private Group getGroup(Long id) {
 		return groupRepository.findById(id).get();
 	}
-	// find post by id
+	/**
+	 * get image entity object from 
+	 * @param name image name
+	 */
+	private Image getImage(String name) {
+		return imageRepository.findByName(name);
+	}
+	/**
+	 * find group post from database by id
+	 * first find group,then get posts from group
+	 * @param requestBody json body from request
+	 */
 	private Post getPost(HashMap<String, String> requestBody) {
 		final Post[] posts = new Post[1];
 		// get group where that contains post
@@ -204,20 +260,5 @@ public class HomeController {
 				}
 			});
 		return posts[0];
-	}
-	private String saveFile(MultipartFile file) {
-		try {
-			// full path to file
-		    String filepath = Paths.get(
-		    	homeFolder,file.getOriginalFilename()
-		    ).toString();
-		    // save the file locally
-		    new FileOutputStream(new File(filepath))
-		    	.write(file.getBytes());
-		    return filepath;
-	    }catch (Exception e) {
-	    	e.printStackTrace();
-	    }
-	    return null;
 	}
 }
