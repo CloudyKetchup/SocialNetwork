@@ -196,7 +196,7 @@ function getUserData() {
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
-    url  : 'http://localhost:8080/user_data',
+    url  : 'http://localhost:8080/user_groups',
     async: false,
     data : Cookies.get('account-data'), // cookie with user data
     success : (result) => {
