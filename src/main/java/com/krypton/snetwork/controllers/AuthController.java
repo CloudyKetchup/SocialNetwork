@@ -18,28 +18,27 @@ public class AuthController{
 	@Autowired
 	private UserRepository userRepository;
 
+	/**
+	 * redirect to authentication page
+	 * @return 		html page
+	 */
 	@RequestMapping(
-		value = "/auth",
-		method = RequestMethod.GET,
+		value 	 = "/auth",
+		method 	 = RequestMethod.GET,
 		produces = "text/html"
 	)
 	public String auth() {
 		return "auth.html";
     }
-
-    @RequestMapping(
-    	value = "/account",
-    	method = RequestMethod.GET,
-    	produces = "text/html"
-    )
-    public String account() {
-    	return "account.html";
-    }
-
+    /**
+     * user login procedure
+     * @param  formData 	user email and password
+     * @return response message or response message with user data
+     */
     @RequestMapping("/login")
 	@ResponseBody
 	public HashMap<String, Object> login(@RequestBody HashMap<String, String> formData) {
-		String email = formData.get("email");
+		String email 	= formData.get("email");
 		String password = formData.get("password");
 		// body for response
 		HashMap<String, Object> response;
@@ -63,7 +62,11 @@ public class AuthController{
 		}
 		return response;
 	}
-
+	/**
+	 * user registration procedure
+	 * @param  formData 	user name,email and password
+	 * @return message "account exist" or "registered" 
+	 */
 	@RequestMapping("/register")
 	@ResponseBody
 	public Map<String, String> register(@RequestBody HashMap<String, String> formData) {
@@ -77,23 +80,34 @@ public class AuthController{
 		}
 		return response;
 	}
-	// check if email already exist in database
+	/**
+	 * check if email already exist in database
+	 * @param email 	user email
+	 * @return boolean
+	 */
 	private boolean userExist(String email) {
 		return userRepository.findEmail(email).isPresent();
 	}
 
-	// load user from database
+	/**
+	 * load user from database
+	 * @param email 	user email
+	 * @return User entity
+	 */
 	private User loadUser(String email) {
 		return userRepository.findByEmail(email);
 	}
-	// save new user account to database
+	/**
+	 * save new user account to database
+	 * @param formData 	user data
+	 */
 	private void saveUser(HashMap<String, String> formData) {
 		// save user to database
 		userRepository.save(
 			new User(
-				formData.get("username"),
-				formData.get("email"),
-				formData.get("password")
+				formData.get("username"),	// username
+				formData.get("email"),		// email
+				formData.get("password")	// password
 			)
 		);
 	}
