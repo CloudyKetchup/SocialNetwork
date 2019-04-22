@@ -1,11 +1,11 @@
 package com.krypton.snetwork.model;
 
-import com.krypton.snetwork.model.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.*;
 
 @Getter@Setter
 @Entity
@@ -16,21 +16,22 @@ public class Image {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column
+	@Column(unique = true)
 	private String name;
 
 	@Column
-  	private String type;
+	private String type;
 
-  	@Lob
-    @Column
-    private byte[] image;
+	@Lob
+	@Column
+	@JsonIgnore
+	private byte[] bytes;
 
-    public Image() {}
+	public Image() {}
 
-    public Image(String name, String type, byte[] image) {
-    	this.name = name;
-    	this.type = type;
-    	this.image  = image;
+	public Image(String name, String type, byte[] bytes) {
+		this.name 	= name;
+		this.type 	= type;
+		this.bytes = bytes;
     }
 }
