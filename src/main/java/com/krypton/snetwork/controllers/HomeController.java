@@ -1,16 +1,23 @@
 package com.krypton.snetwork.controllers;
 
+import com.krypton.snetwork.model.User;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.group.Post;
-import com.krypton.snetwork.model.User;
-import com.krypton.snetwork.repository.*;
+import com.krypton.snetwork.repository.GroupRepository;
+import com.krypton.snetwork.repository.UserRepository;
 import com.krypton.snetwork.service.group.GroupServiceImpl;
+import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+
 
 @RestController
 public class HomeController {
@@ -23,6 +30,9 @@ public class HomeController {
 
 	@Autowired
 	private GroupServiceImpl groupService;
+
+	@Autowired
+    private ImageServiceImpl imageService;
 
 	@Autowired
 	private UserServiceImpl userService;
@@ -44,7 +54,7 @@ public class HomeController {
 	/**
 	 * post request for getting group data
 	 * @param group 	json group data
-	 * @return group parameters,avatar image,posts and members
+	 * @return group parameters,profile bytes,posts and members
 	 */
 	@RequestMapping("/group_data")
 	public HashMap<String, Object> groupData(@RequestBody HashMap<String, String> group) {
@@ -54,8 +64,20 @@ public class HomeController {
 		}};
 	}
 	/**
+	 * get group image in base64 byte format
+	 * @param group 	group id
+	 * @return group image in base64 format
+	 */
+	@RequestMapping("/group_image")
+    public byte[] groupImage(@RequestBody HashMap<String, String> group) {
+		// group image bytes
+        byte[] image = groupService.getGroup(Long.valueOf(group.get("id")))
+				.getGroupImage().getBytes();
+		return Base64.encodeBase64(image);
+    }
+	/**
 	 * post request for creating new group
-	 * @param image 	group image from form data
+	 * @param image 	group photo from form data
 	 * @param name  	group name
 	 * @param admin 	admin email
 	 * @return message "group already exist" or "group created"
@@ -66,19 +88,20 @@ public class HomeController {
 		@RequestParam("name") String name,
 		@RequestParam("admin") String admin
 	) {	
-		// response body
-		HashMap<String, String> response = new HashMap<>(1);
 		// check if room with that name exist
 		if (groupService.groupExist(name)) {
-			response.put("response","group already exist");
+			return new HashMap<>(){{
+				put("response","group already exist");
+			}};
 		}else {
-			// insert image to database
-			groupService.insertImage(name, image);
+			// insert photo to database
+			imageService.insertImage(name, image);
 			// insert group to database
 			groupService.insertGroup(name, admin);
-			response.put("response","group created");
+			return new HashMap<>(){{
+				put("response","group created");
+			}};
 		}
-		return response;
 	}
 	/**
 	 * post request for new group post
