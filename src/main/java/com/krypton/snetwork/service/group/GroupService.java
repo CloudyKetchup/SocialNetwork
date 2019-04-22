@@ -1,11 +1,9 @@
 package com.krypton.snetwork.service.group;
 
+import com.krypton.snetwork.model.Image;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.group.Post;
 import com.krypton.snetwork.model.User;
-import com.krypton.snetwork.model.Image;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 
 public interface GroupService {
@@ -22,24 +20,12 @@ public interface GroupService {
 	 */
 	public void insertGroup(String name, String email);
 	/**
-	 * save new image entity to database with image file
-	 * @param name 		image entity name
-	 * @param image 	image multipart file from request
-	 */
-	public void insertImage(String name, MultipartFile image);
-	/**
-	 * create group entity with admin entity and avatar image
+	 * create group entity with admin entity and avatar bytes
 	 * @param name 		group name
 	 * @param admin 	admin email
-	 * @param image 	group avatar image  
+	 * @param image 	group avatar bytes
 	 */
-	public Group createGroup(String name, String admin, Image image);
-	/** 
-	 * create image entity 
-	 * @param name  	image entity name
-	 * @param image 	image multipart file from request
-	 */
-	public Image createImage(String name, MultipartFile image) throws IOException;
+	public Group createGroup(String name, User admin, Image image);
 	/**
 	 * add new member to group members list
 	 * @param group 	group entity
@@ -57,14 +43,9 @@ public interface GroupService {
 	 */
 	public Group getGroup(Long id);
 	/**
-	 * get image entity by name
-	 * @param name 		image name
-	 */
-	public Image getImage(String name);
-	/**
 	 * get post entity by id
 	 * @param groupId 	group from where post comes
 	 * @param postId 	post id
 	 */
-    public Post getPost(String groupId, String postId);
+	public Post getPost(String groupId, String postId);
 }
