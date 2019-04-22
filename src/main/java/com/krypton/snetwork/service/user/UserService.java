@@ -2,9 +2,18 @@ package com.krypton.snetwork.service.user;
 
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.User;
+import com.krypton.snetwork.model.Image;
+
+import java.util.HashMap;
 
 public interface UserService {
 
+	/**
+	 * check if email already exist in database
+	 * @param email 	user email
+	 * @return boolean
+	 */
+	public boolean userExist(String email);
 	/**
 	 * add group entity to member groups list
 	 * @param group  	group entity
@@ -17,4 +26,12 @@ public interface UserService {
 	 * @return 			User entity
 	 */
 	public User getUser(String email);
+	/**
+	 * save new user account to database
+	 * @param username
+	 * @param email
+	 * @param password
+	 * @param image 	// user avatar bytes
+	 */
+	public void saveUser(String username, String email, String password,Image image);
 }
