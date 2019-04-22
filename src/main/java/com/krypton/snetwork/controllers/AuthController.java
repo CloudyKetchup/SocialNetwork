@@ -1,114 +1,138 @@
 package com.krypton.snetwork.controllers;
 
 import com.krypton.snetwork.model.User;
-import com.krypton.snetwork.repository.UserRepository;
+import com.krypton.snetwork.service.user.UserServiceImpl;
+import com.krypton.snetwork.service.image.ImageServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
-import java.util.Map;
 
 @Controller
 public class AuthController{
 
-	@Autowired
-	private UserRepository userRepository;
+    @Autowired
+    private UserServiceImpl userService;
 
-	/**
-	 * redirect to authentication page
-	 * @return 		html page
-	 */
-	@RequestMapping(
-		value 	 = "/auth",
-		method 	 = RequestMethod.GET,
-		produces = "text/html"
-	)
-	public String auth() {
-		return "auth.html";
+    @Autowired
+    private ImageServiceImpl imageService;
+
+    /**
+     * redirect to registration page
+     * @return 		registration page
+     */
+    @GetMapping(
+            value 	 = "/register",
+            produces = "text/html"
+    )
+    public String registerPage() {
+        return "register.html";
+    }
+    /**
+     * redirect to login page
+     * @return 		login page
+     */
+    @GetMapping(
+            value 	 = "/login",
+            produces = "text/html")
+    public String loginPage() {
+        return "login.html";
     }
     /**
      * user login procedure
      * @param  formData 	user email and password
      * @return response message or response message with user data
      */
-    @RequestMapping("/login")
-	@ResponseBody
-	public HashMap<String, Object> login(@RequestBody HashMap<String, String> formData) {
-		String email 	= formData.get("email");
-		String password = formData.get("password");
-		// body for response
-		HashMap<String, Object> response;
-		// get user from database
-        User dbUser = loadUser(email);
-		if (dbUser != null) {
-			if (dbUser.getPassword().equals(password)) {
-				response = new HashMap<>(){{
-					put("response", "login success");
-					put("account", dbUser);
-				}};
-			}else {
-				response = new HashMap<>(){{
-					put("response","wrong password");
-				}};
-			}
-		}else {
-			response = new HashMap<>(){{
-				put("response","email not exist");
-			}};
-		}
-		return response;
-	}
-	/**
-	 * user registration procedure
-	 * @param  formData 	user name,email and password
-	 * @return message "account exist" or "registered" 
-	 */
-	@RequestMapping("/register")
-	@ResponseBody
-	public Map<String, String> register(@RequestBody HashMap<String, String> formData) {
-	    HashMap<String, String> response = new HashMap<>();
-		// check if email does already exist
-	    if (userExist(formData.get("email"))) {
-	    	response.put("response","account exist");
-	    }else {
-	    	saveUser(formData);
-	    	response.put("response","registered");
-		}
-		return response;
-	}
-	/**
-	 * check if email already exist in database
-	 * @param email 	user email
-	 * @return boolean
-	 */
-	private boolean userExist(String email) {
-		return userRepository.findEmail(email).isPresent();
-	}
-
-	/**
-	 * load user from database
-	 * @param email 	user email
-	 * @return User entity
-	 */
-	private User loadUser(String email) {
-		return userRepository.findByEmail(email);
-	}
-	/**
-	 * save new user account to database
-	 * @param formData 	user data
-	 */
-	private void saveUser(HashMap<String, String> formData) {
-		// save user to database
-		userRepository.save(
-			new User(
-				formData.get("username"),	// username
-				formData.get("email"),		// email
-				formData.get("password")	// password
-			)
-		);
-	}
+    @PostMapping("/login")
+    @ResponseBody
+    public HashMap<String, Object> login(@RequestBody HashMap<String, String> formData) {
+        String email 	= formData.get("email");
+        String password = formData.get("password");
+        // body for response
+        HashMap<String, Object> response;
+        // get user from database
+        User dbUser = userService.getUser(email);
+        if (dbUser != null) {
+            if (dbUser.getPassword().equals(password)) {
+                response = new HashMap<>(){{
+                    put("response", "login success");
+                    put("account", dbUser);
+                }};
+            }else {
+                response = new HashMap<>(){{
+                    put("response","wrong password");
+                }};
+            }
+        }else {
+            response = new HashMap<>(){{
+                put("response","email not exist");
+            }};
+        }
+        return response;
+    }
+    /**
+     * user registration procedure
+     * @param image		user profile bytes
+     * @param data 		user name,email,password
+     * @return message "account exist" or "registered"
+     */
+    @PostMapping("/register")
+    @ResponseBody
+    public HashMap<String, String> register(
+            @RequestParam("image") MultipartFile image,
+            @RequestParam("data")  String data
+    ) {
+        // parsed json from request
+        HashMap<String, String> parsedData = stringToHashMap(data);
+        // username from request
+        String username = parsedData.get("username");
+        // email from request
+        String email 	= parsedData.get("email");
+        // password from request
+        String password = parsedData.get("password");
+        // check if email does already exist
+        if (userService.userExist(email)) {
+            return new HashMap<>(){{
+                put("response","account exist");
+            }};
+        }else {
+            // insert user profile bytes to database
+            imageService.insertImage(username,image);
+            // save user entity to database
+            userService.saveUser(
+                    username,
+                    email,
+                    password,
+                    imageService.getImage(username)
+            );
+            return new HashMap<>(){{
+                put("response","registered");
+            }};
+        }
+    }
+    /**
+     * parses json from string to hashmap
+     * @param json		String with keys and values
+     */
+    public static HashMap<String, String> stringToHashMap(String json) {
+        // hashmap parsed from string
+        HashMap<String, String> parsedHashMap = new HashMap<>();
+        // remove curly brackets
+        json = json.substring(1, json.length()-1);
+        // split string to create key/value pairs
+        String[] keyValuePairs = json.split(",");
+        // iterate pairs
+        for (String pair : keyValuePairs) {
+            // split pair in key and value
+            String[] entry = pair.split(":");
+            // put key and value to parsed hashmap
+            parsedHashMap.put(
+                    entry[0].replace('"',' ').trim(),
+                    entry[1].replace('"',' ').trim()
+            );
+        }
+        return parsedHashMap;
+    }
 }

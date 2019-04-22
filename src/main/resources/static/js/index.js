@@ -1,7 +1,6 @@
 function onLoad() {
   onloadRedirect()
 }
-
 // spawn create room dialog
 document.getElementById('create-group').onclick = () => {
   $('#create-group-dialog').css('display','block');
@@ -29,14 +28,25 @@ document.getElementById('create-group-submit').onclick = () => {
 document.getElementById('group-name').onkeypress = () => {
   $('#field-error').html('')
 }
+function chooseAvatar() {
+  $('#choose-user-image').click()
+}
+// change avatar image on register page after selecting image
+function changeAvatar() {
+  const reader = new FileReader()
 
+  reader.onload = (e) => {
+     $('#avatar').attr('src', e.target.result)
+  }
+  reader.readAsDataURL($('#choose-user-image').prop('files')[0])
+}
 // check login status
 function onloadRedirect() {
   // check if cookie exist
   if (Cookies.get('account-data') === undefined) {
-    window.location.href = "/auth"
+    window.location.href = "/register"
   }else {
-    getUserData()
+    getUserGroups()
   }
 }
 /* json from ajax give objects in random 
@@ -57,38 +67,10 @@ function sortJsonObjects(objects) {
 function loginTrigger() {
   const email    = $('#login-email')
   const password = $('#login-password')
-  // login procedure
-  login(email,password)
-};
-// register request
-function registerTrigger() {
-  // register form fields
-  const username = $('#name-field')
-  const email    = $('#register-email')
-  const password = $('#register-password')
-  // ajax post request
-  $.ajax({
-    type : 'POST',
-    contentType : 'application/json; charset=utf-8',
-    url : 'http://localhost:8080/register',
-    data : JSON.stringify({
-      'username': username.val(),   // username value from field
-      'email': email.val(),         // email value from field
-      'password': password.val()    // password value from field
-    }),
-    success : (result) => {
-      // check if registration was successful
-      if (result['response'] === 'registered') {
-        // login to new account if registered
-        login(email,password)
-      }else {
-        // empty fields if failed
-        username.val('')
-        email.val('')
-        password.val('')
-      }
-    }
-  })
+  if (email.val() !== '' && password.val() !== '') {
+    // login procedure
+    login(email,password)
+  }
 }
 // login request
 function login(emailfield,passwordfield) {
@@ -104,6 +86,55 @@ function login(emailfield,passwordfield) {
     success : (result) => {
       // handle json response after login
       loginResponseHandler(result,emailfield,passwordfield)
+    }
+  })
+}
+// register request
+function registerTrigger() {
+  // register form fields
+  const username = $('#name-field')
+  const email    = $('#register-email')
+  const password = $('#register-password')
+  if (
+    username.val()  !== ''
+    &&
+    email.val()     !== ''
+    &&
+    password.val()  !== ''
+  ) {
+      register(username,email,password)
+  }
+}
+function register(username,email,password) {
+  const formData = new FormData()
+  formData.append('image',$('#choose-user-image').prop('files')[0])
+  formData.append('data', JSON.stringify({
+      // username value from field
+      'username': username.val(),
+      // email value from field
+      'email'   : email.val(),
+      // password value from field
+      'password': password.val()
+   })
+  )
+  // ajax post request
+  $.ajax({
+    type : 'POST',
+    url : 'http://localhost:8080/register',
+    contentType: false,
+    processData: false,
+    data : formData,
+    success : (result) => {
+      // check if registration was successful
+      if (result['response'] === 'registered') {
+        // login to new account if registered
+        login(email,password)
+      }else {
+        // empty fields if failed
+        username.val('')
+        email.val('')
+        password.val('')
+      }
     }
   })
 }
@@ -136,6 +167,9 @@ function setCookie(account) {
 }
 // create new group request
 function createGroup() {
+  // const resizedImage = resizeImage(
+  //   $("#choose-group-image").prop('files')[0]
+  // )
   const formData = new FormData()
   // image file
   formData.append('image', $("#choose-group-image").prop('files')[0])
@@ -149,7 +183,6 @@ function createGroup() {
     url : 'http://localhost:8080/new_group',
     contentType: false,
     processData: false,
-    cache: false,
     data : formData,
     success : (result) => {
       // check if group was created
@@ -157,8 +190,8 @@ function createGroup() {
         // send group image
         // clear groups list
         $('.groups-box').empty()
-        // update user data
-        getUserData()
+        // update user groups
+        getUserGroups()
       }else {
         // empty name field
         $('#group-name').val('')
@@ -183,15 +216,30 @@ function getGroupData(group) {
     }),
     success : (result) => {
       groupData = $.extend(true, {}, result['group'])
+      getGroupImage()
     }
+  })
+}
+function getGroupImage() {
+  $.ajax({
+    type : 'POST',
+    contentType : 'application/json; charset=utf-8',
+    url : 'http://localhost:8080/group_image',
+    data : JSON.stringify({
+      'id' : groupData['id']
+    }),
+    success : (result) => {
+      $('#group-img')
+        .attr('src','data:image/jpg;base64,' + result)
+    } 
   })
 }
 // return cookie data
 function getUser() {
   return JSON.parse(Cookies.get('account-data'))
 }
-// request user data json
-function getUserData() {
+// request user groups json
+function getUserGroups() {
   // ajax post request
   $.ajax({
     type : 'POST',
@@ -347,7 +395,7 @@ function postAuthor(author) {
     // author image
     $('<div/>')
       .attr('class','group-member-image')
-      .append('<img/>')
+      .append($('<img/>'))
   ]
 }
 // like button with heart icon
@@ -370,7 +418,7 @@ function likeButton(post) {
   // like button settings based on liked status
   if (liked) {
     likeButton
-      // change color to red
+      // change button color to red
       .css('color','#F44256')
       // on tap will remove user like
       .click(() => sendLike(post, 'remove_like'))
@@ -427,7 +475,7 @@ function groupContainerImage(members) {
           .attr('class','group-image')
           .append(
             $('<img/>')
-              .attr('src','data:image/png;base64,' + groupData['groupImage']['image'])
+              .attr('id','group-img')
           ),
         // group follow button
         $('<button/>')
