@@ -8,17 +8,16 @@ body,html {
 	overflow-x: hidden;
 }
 input {
-	width: 80%;
-	height: 8%;
-	background-color: rgba(122, 122, 122,0.3);
-	border-radius: 2px;
-	outline: none;
-	border: none;
-	color: #323232;
-	padding-left: 10px;
-	padding-right: 10px;
-	width: 40%;
-	position: absolute;
+    height: 8%;
+    width: 300px;
+    background-color: rgba(122, 122, 122,0.3);
+    border-radius: 2px;
+    outline: none;
+    border: none;
+    color: white;
+    margin-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 button {
 	height: 8%;
@@ -30,72 +29,41 @@ button {
 	outline: none;
 	font-weight: 600;
 	transition: 0.5s;
-	bottom: 20%;
-	position: absolute;
 }
 button:hover {
 	background-color: #d83144;
 	transition: 0.5s;
 }
 span {
-	top: 10%;
+	margin-top: 10%;
+	margin: 0 auto;
 	font-weight: bold;
 	font-size: 20px;
 	color: #323232;
-	position: absolute;
 }
-.auth-container {
-	background-color: white;
-	border-radius: 5px;
+.main-container {
+	background-color: #323232;
+    border-radius: 5px;
+    height: 80%;
+    width: 80%;
+    margin: 0 auto;
+    margin-top: 2%;
+    text-align: center;
+    padding: 20px;
+}
+#avatar {
+	margin-top: 20px;
+    height: 200px;
+    width: 200px;
+    border: 2px solid #F44256 !important;
+    border-radius: 100px;
+    object-fit: cover;
+}
+#form {
+	margin: 0 auto;
+	width: 50%;
 	height: 80%;
-	width: 80%;
-	left: 8.5%;
-	top: 7%;
-	padding: 20px;
-	position: absolute;
 }
-.login-container {
-	height: 80%;
-	width: 40%;
-	text-align: center;
-	float: left;
-}
-.register-container {
-	height: 80%;
-	width: 40%;
-	text-align: center;
-	float: right;
-	margin-top: -77%;
-}
-#separator {
-	height: 100%;
-	width: 2px;
-	margin-left: 50%;
-	background-color: grey;
-}
-#login-email{
-	left: 5%;
-	top: 20%;
-}
-#name-field {
-	right: 5%;
-	top: 20%;
-}
-#register-email{
-	right: 5%;
-	top: 40%;
-}
-#login-password{
-	left: 5%;
-	top: 40%;
-}
-#register-password{
-	right: 5%;
-	top: 60%;
-}
-#submit-login {
-	left: 19%;
-}
-#submit-register {
-	right: 17%;
+#choose-user-image {
+	display: none;
 }
