@@ -3,6 +3,7 @@ package com.krypton.snetwork.service.image;
 import com.krypton.snetwork.model.Image;
 import com.krypton.snetwork.repository.ImageRepository;
 import net.coobird.thumbnailator.Thumbnails;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.Base64;
 
 @Service
 public class ImageServiceImpl implements ImageService{
@@ -19,10 +19,10 @@ public class ImageServiceImpl implements ImageService{
 	private ImageRepository imageRepository;
 
 	@Override
-	public void insertImage(String name, MultipartFile image) {
+	public void insertImage(String email, MultipartFile image) {
 		try {
 			// group bytes entity
-			Image imageEntity = createImage(name, image);
+			Image imageEntity = createImage(email, image);
 			// save bytes to database
 			imageRepository.save(imageEntity);
 		}catch (IOException e) {
@@ -31,20 +31,20 @@ public class ImageServiceImpl implements ImageService{
 	}
 
 	@Override
-	public Image createImage(String name, MultipartFile image) throws IOException {
+	public Image createImage(String email, MultipartFile image) throws IOException {
 		// resize bytes
-//		byte[] resizedImage = resizeImage(multipartToFile(image),800,800);
+		byte[] resizedImage = resizeImage(multipartToFile(image),800,800);
 		// bytes entity
 		return new Image(
-			name + "-image",		// bytes file name
+			email + "-photo",		// image name
 			image.getContentType(),		// bytes type
-			image.getBytes()            // bytes bytes
+			resizedImage            // bytes bytes
 		);
 	}
 	
 	@Override
-	public Image getImage(String name) {
-		return imageRepository.findByName(name + "-image");
+	public Image getImage(String email) {
+		return imageRepository.findByName(email + "-photo");
 	}
 
 	@Override
@@ -72,6 +72,6 @@ public class ImageServiceImpl implements ImageService{
 
 		ImageIO.write(resizedImage, "jpg", outputStream);
 		// write bytes to byte array
-		return Base64.getEncoder().encode(outputStream.toByteArray());
+		return outputStream.toByteArray();
 	}
 }

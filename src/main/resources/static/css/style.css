@@ -206,9 +206,9 @@ input {
 .new-post-submit {
 	background-color: #F44256;
     width: 10%;
+    font-size: 15px;
     border-top-left-radius: 0px;
     border-bottom-left-radius: 0px;
-    margin-right: 0px;
 }
 .new-post-input {
 	width: 90%;
@@ -225,7 +225,7 @@ input {
 	background-color: rgb(20, 20, 20);
 	color: white;
 	display: inline-block;
-	padding: 5px;
+	padding: 10px;
 	margin-top: 10px;
     border-radius: 5px;
     min-height: 100px;
@@ -235,9 +235,14 @@ input {
 	display: inline-block;
 }
 .post-content-box {
-	margin-left: 10px;
     width: 70%;
     overflow-wrap: break-word;
+}
+.post-author-image > img {
+	border-radius: 100px;
+    height: 30px;
+    width: 30px;
+	object-fit: cover;
 }
 .like-button {
 	left: 45px;
@@ -297,10 +302,9 @@ input {
 	background-color: transparent;
 	height: 40px;
 	width: 100%;
-	border-radius: 5px;
-	margin-top: 5px;
 	line-height: 35px;
 	padding: 1%;
+	margin-top: 5px;
 	transition: 0.2s;
 }
 .group-member:hover {
@@ -311,6 +315,12 @@ input {
 	height: 40px;
 	width: 40px;
 	float: left;
+}
+.group-member-image > img {
+	width: 35px;
+	height: 35px;
+	border-radius: 100px;
+	object-fit: cover;
 }
 .group-member-name {
 	float: left;

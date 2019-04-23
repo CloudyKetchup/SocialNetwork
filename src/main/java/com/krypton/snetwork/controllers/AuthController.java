@@ -99,13 +99,13 @@ public class AuthController{
             }};
         }else {
             // insert user profile bytes to database
-            imageService.insertImage(username,image);
+            imageService.insertImage(email,image);
             // save user entity to database
             userService.saveUser(
                     username,
                     email,
                     password,
-                    imageService.getImage(username)
+                    imageService.getImage(email)
             );
             return new HashMap<>(){{
                 put("response","registered");

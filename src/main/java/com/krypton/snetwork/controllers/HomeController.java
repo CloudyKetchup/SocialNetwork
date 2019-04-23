@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-
+import java.util.List;
 
 @RestController
 public class HomeController {
@@ -39,39 +40,37 @@ public class HomeController {
 
 	/**
 	 * post request for getting user groups list
-	 * @param account 	json user account data
+	 * @param request 	user account data
 	 * @return user groups entities
 	 */
 	@RequestMapping("/user_groups")
-	public HashMap<String, Object> userGroups(@RequestBody HashMap<String, String> account) {
-	    // user entity
-	    User user = userService.getUser(account.get("email"));
+	public HashMap<String, Object> userGroups(@RequestBody HashMap<String, String> request) {
 	    // return user entity in json
 	    return new HashMap<>(){{
-			put("groups",user.getGroups());
+			put("groups",userService.getUser(request.get("email")).getGroups());
 		}};
 	}
 	/**
 	 * post request for getting group data
-	 * @param group 	json group data
+	 * @param request 	json group data
 	 * @return group parameters,profile bytes,posts and members
 	 */
 	@RequestMapping("/group_data")
-	public HashMap<String, Object> groupData(@RequestBody HashMap<String, String> group) {
+	public HashMap<String, Object> groupData(@RequestBody HashMap<String, String> request) {
 		// return group entity in json
 		return new HashMap<>(){{
-			put("group",groupService.getGroup(Long.valueOf(group.get("id"))));
+			put("group",groupService.getGroup(Long.valueOf(request.get("id"))));
 		}};
 	}
 	/**
 	 * get group image in base64 byte format
-	 * @param group 	group id
+	 * @param request 	group id
 	 * @return group image in base64 format
 	 */
 	@RequestMapping("/group_image")
-    public byte[] groupImage(@RequestBody HashMap<String, String> group) {
-		// group image bytes
-        byte[] image = groupService.getGroup(Long.valueOf(group.get("id")))
+    public byte[] groupImage(@RequestBody HashMap<String, String> request) {
+		// load group image  from database
+        byte[] image = groupService.getGroup(Long.valueOf(request.get("id")))
 				.getGroupImage().getBytes();
 		return Base64.encodeBase64(image);
     }
@@ -105,36 +104,49 @@ public class HomeController {
 	}
 	/**
 	 * post request for new group post
-	 * @param post 		group post data like group id,content...
+	 * @param request 		group post data like group id,content...
 	 */
 	@RequestMapping("/new_post")
-	public void newPost(@RequestBody HashMap<String, String> post) {
+	public void newPost(@RequestBody HashMap<String, String> request) {
 		// group where to save new post
-		Group group = groupService.getGroup(Long.valueOf(post.get("group_id")));
+		Group group = groupService.getGroup(Long.valueOf(request.get("group_id")));
 		// get author entity from database
-		User author = userService.getUser(post.get("author"));
+		User author = userService.getUser(request.get("author"));
 		// add new post to group
 		group.getPosts().add(
 			// post entity object
-			new Post(post.get("content"),author,Long.valueOf(post.get("time")))
+			new Post(request.get("content"),author,Long.valueOf(request.get("time")))
 		);
 		// update group in database
 		groupRepository.save(group);
 	}
 	/**
+	 * get post author photo
+	 * @param request 		author email
+	 * @return author photo in base64 format 
+	 */
+	@RequestMapping("/post_author_image")
+	public byte[] authorImage(@RequestBody HashMap<String, String> request) {
+		// author entity
+		User author  = userService.getUser(request.get("author"));
+		// author image
+		byte[] image = author.getProfilePhoto().getBytes();
+		return Base64.encodeBase64(image);
+	}
+	/**
 	 * post request for adding like to post in group
-	 * @param like 		group,post and id
+	 * @param request 		group,post and id
 	 */
 	@RequestMapping("/add_like")
-	public void addLike(@RequestBody HashMap<String, String> like) {
+	public void addLike(@RequestBody HashMap<String, String> request) {
 		// group from where post come
-		String groupId = like.get("group_id");
+		String groupId = request.get("group_id");
 		// post where to add like
-		String postId  = like.get("post_id");
+		String postId  = request.get("post_id");
 		// get post likes
 		groupService.getPost(groupId,postId).getLikes()
 			// add user id to likes
-			.add(Long.valueOf(like.get("user_id")));
+			.add(Long.valueOf(request.get("user_id")));
 		// update group containing posts with likes
 		groupRepository.save(
 			groupService.getGroup(Long.valueOf(groupId))
@@ -142,22 +154,29 @@ public class HomeController {
 	}
 	/**
 	 * post request for removing like from post in group
-	 * @param like 		group,post and id
+	 * @param request 		group,post and id
 	 */
 	@RequestMapping("/remove_like")
-	public void removeLike(@RequestBody HashMap<String, String> like) {
+	public void removeLike(@RequestBody HashMap<String, String> request) {
 		// group from where post come
-		String groupId = like.get("group_id");
+		String groupId = request.get("group_id");
 		// post from where remove like
-		String postId  = like.get("post_id");
+		String postId  = request.get("post_id");
 		// get post likes
 		groupService.getPost(groupId,postId).getLikes()
 			// remove user id from post likes
-			.remove(Long.valueOf(like.get("user_id")));
+			.remove(Long.valueOf(request.get("user_id")));
 		// update group containing posts with likes
 		groupRepository.save(
 			groupService.getGroup(Long.valueOf(groupId))
 		);
+	}
+	@RequestMapping("/member_image")
+	public byte[] memberImage(@RequestBody HashMap<String,String> request) {
+		User member   = userService.getUser(request.get("email"));
+		// member image
+		byte[] image  = member.getProfilePhoto().getBytes();
+		return Base64.encodeBase64(image);
 	}
 
 	@RequestMapping("/add_member")

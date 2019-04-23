@@ -266,12 +266,17 @@ function renderGroups(group) {
       .attr('class','group')
       .click(() => {
         getGroupData(group)
-        renderGroupContainer(group)
+        // render group photo,posts and members
+        renderGroupContainer()
+        // load members profile photo
+        for(member in groupData['members']) {
+          membersPhoto(groupData['members'][member])
+        }
       }
     )
   )
 }
-function renderGroupContainer(group) {
+function renderGroupContainer() {
   $('.main-container').append(
     $('<div/>')
       .attr('class','group-container')
@@ -279,7 +284,7 @@ function renderGroupContainer(group) {
       .append(
         [
           // close button
-          groupContainerClose(group),
+          groupContainerClose(),
           // container with new post input/submit
           newPostContainer(),
           // div containing posts
@@ -291,6 +296,40 @@ function renderGroupContainer(group) {
         ]
       )
   )
+}
+// get group members profile photos
+function membersPhoto(member) {
+  // ajax post request
+  $.ajax({
+    type : 'POST',
+    url : 'http://localhost:8080/member_image',
+    contentType : 'application/json; charset=utf-8',
+    data : JSON.stringify({
+      'email' : member['email']
+    }),
+    success : (result) => {
+      // set member image
+      $('#member' + member['id'] + 'image')
+          .attr('src','data:image/jpg;base64,' + result)
+    }
+  })
+}
+function postAuthorPhoto(author) {
+  let photo
+  // ajax post request
+  $.ajax({
+    type : 'POST',
+    url : 'http://localhost:8080/post_author_image',
+    contentType : 'application/json; charset=utf-8',
+    async : false,
+    data : JSON.stringify({
+      'author' : author['email']
+    }),
+    success : (result) => {
+      photo = result
+    }
+  })
+  return photo
 }
 // close button for container
 function groupContainerClose() {
@@ -391,11 +430,21 @@ function postAuthor(author) {
     // username
     $('<span/>')
       .html(author['username'])
-      .css('line-height','250%'),
+      .css({
+        'line-height':'250%',
+        'margin-left':'10px'
+      }),
     // author image
     $('<div/>')
-      .attr('class','group-member-image')
-      .append($('<img/>'))
+      .attr('class','post-author-image')
+      .css({
+        'float':'left',
+        'padding-top':'5px'
+      })
+      .append(
+        $('<img/>')
+          .attr('src','data:image/jpg;base64,' + postAuthorPhoto(author))
+      )
   ]
 }
 // like button with heart icon
@@ -507,7 +556,10 @@ function groupMember(member) {
       [
         $('<div/>')
           .attr('class','group-member-image')
-          .append('<img/>'),
+          .append(
+            $('<img/>')
+              .attr('id','member' + member['id'] + 'image')
+          ),
         $('<span/>')
           .attr('class','group-member-name')
           .html(member['username'])
