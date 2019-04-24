@@ -244,6 +244,10 @@ input {
     width: 30px;
 	object-fit: cover;
 }
+.post-time {
+	margin-left: 10px;
+	font-size: 15px;
+}
 .like-button {
 	left: 45px;
     margin-bottom: 5px;

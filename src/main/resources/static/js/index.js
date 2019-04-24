@@ -50,20 +50,19 @@ function onloadRedirect() {
   }
 }
 /* json from ajax give objects in random 
-  so we sort them with bubble sort */
+  so we sort them by id */
 function sortJsonObjects(objects) {
-  for (let i  = 0; i < objects.length; i++) {
-    for(let j = 0; j < objects.length - i - 1; j++){
-    if (objects[j]['id'] > objects[j + 1]['id']) {
-      let temp   = objects[j]
-      objects[j] = objects[j + 1]
-      objects[j + 1] = temp
+  for (let i = 0; i < objects.length; i++) {
+    for(let j = 0; j < objects.length; j++) {
+      if (objects[i]['id'] > objects[j]['id']) {
+        let temp   = objects[i]
+        objects[i] = objects[j]
+        objects[j] = temp
+      }
     }
-   }
   }
   return objects
 }
-// login request
 function loginTrigger() {
   const email    = $('#login-email')
   const password = $('#login-password')
@@ -89,7 +88,6 @@ function login(emailfield,passwordfield) {
     }
   })
 }
-// register request
 function registerTrigger() {
   // register form fields
   const username = $('#name-field')
@@ -105,6 +103,7 @@ function registerTrigger() {
       register(username,email,password)
   }
 }
+// registration request
 function register(username,email,password) {
   const formData = new FormData()
   formData.append('image',$('#choose-user-image').prop('files')[0])
@@ -389,6 +388,7 @@ function newPostContainer() {
       ]
     )
 }
+// group post container
 function groupPostsContainer(posts) {
   // group posts container
   const groupPosts = $('<div/>')
@@ -402,15 +402,23 @@ function groupPostsContainer(posts) {
   }
   return groupPosts
 }
-// group post container
 function groupPost(post) {
+  // post div
   return $('<div/>')
     .attr('class','group-post')
     .append(
       [
+        // post header
         $('<div/>')
           .attr('class','group-post-header')
-          .append(postAuthor(post['author'])),
+          .append(
+            // post author image and name
+            postAuthor(post['author']),
+            // time when post was created
+            $('<span/>')
+              .attr('class','post-time')
+              .html(timeConverter(post['time']))
+          ),
         // content text
         $('<div/>')
           .attr('class','post-content-box')
@@ -418,12 +426,19 @@ function groupPost(post) {
             $('<p/>')
               .html(post['content'])
           ),
+        // post footer
         $('<div/>')
           .attr('class','group-post-footer')
           .append(likeButton(post))
       ]
     )
 }
+// convert time from long to hour and minute format
+function timeConverter(time) {
+    let date = new Date(parseInt(time));
+    let localeSpecificTime = date.toLocaleTimeString();
+    return localeSpecificTime.replace(/:\d+ /, ' ');
+  }
 // post author image and username
 function postAuthor(author) {
   return [
