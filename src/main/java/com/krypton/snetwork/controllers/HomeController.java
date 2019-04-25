@@ -3,12 +3,12 @@ package com.krypton.snetwork.controllers;
 import com.krypton.snetwork.model.User;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.group.Post;
+import com.krypton.snetwork.model.group.Comment;
 import com.krypton.snetwork.repository.GroupRepository;
-import com.krypton.snetwork.repository.UserRepository;
 import com.krypton.snetwork.service.group.GroupServiceImpl;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
-import org.apache.tomcat.util.codec.binary.Base64;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import org.apache.tomcat.util.codec.binary.Base64;
+
+import java.util.*;
 
 @RestController
 public class HomeController {
@@ -27,13 +27,10 @@ public class HomeController {
 	private GroupRepository groupRepository;
 
 	@Autowired
-	private UserRepository userRepository;
-
-	@Autowired
 	private GroupServiceImpl groupService;
 
 	@Autowired
-    private ImageServiceImpl imageService;
+	private ImageServiceImpl imageService;
 
 	@Autowired
 	private UserServiceImpl userService;
@@ -45,8 +42,8 @@ public class HomeController {
 	 */
 	@RequestMapping("/user_groups")
 	public HashMap<String, Object> userGroups(@RequestBody HashMap<String, String> request) {
-	    // return user entity in json
-	    return new HashMap<>(){{
+		// return user entity in json
+	    	return new HashMap<>(){{
 			put("groups",userService.getUser(request.get("email")).getGroups());
 		}};
 	}
@@ -69,7 +66,7 @@ public class HomeController {
 	 */
 	@RequestMapping("/group_image")
     public byte[] groupImage(@RequestBody HashMap<String, String> request) {
-		// load group image  from database
+	// load group image  from database
         byte[] image = groupService.getGroup(Long.valueOf(request.get("id")))
 				.getGroupImage().getBytes();
 		return Base64.encodeBase64(image);
@@ -86,7 +83,7 @@ public class HomeController {
 		@RequestParam("image") MultipartFile image,
 		@RequestParam("name") String name,
 		@RequestParam("admin") String admin
-	) {	
+	) {
 		// check if room with that name exist
 		if (groupService.groupExist(name)) {
 			return new HashMap<>(){{
@@ -123,7 +120,7 @@ public class HomeController {
 	/**
 	 * get post author photo
 	 * @param request 		author email
-	 * @return author photo in base64 format 
+	 * @return author photo in base64 format
 	 */
 	@RequestMapping("/post_author_image")
 	public byte[] authorImage(@RequestBody HashMap<String, String> request) {
@@ -146,7 +143,7 @@ public class HomeController {
 		// get post likes
 		groupService.getPost(groupId,postId).getLikes()
 			// add user id to likes
-			.add(Long.valueOf(request.get("user_id")));
+			.add(Long.valueOf(request.get("author_id")));
 		// update group containing posts with likes
 		groupRepository.save(
 			groupService.getGroup(Long.valueOf(groupId))
@@ -165,11 +162,37 @@ public class HomeController {
 		// get post likes
 		groupService.getPost(groupId,postId).getLikes()
 			// remove user id from post likes
-			.remove(Long.valueOf(request.get("user_id")));
+			.remove(Long.valueOf(request.get("author_id")));
 		// update group containing posts with likes
 		groupRepository.save(
 			groupService.getGroup(Long.valueOf(groupId))
 		);
+	}
+	/**
+	 * add new post comment
+	 * @param request		 group,post and athor id
+	 * @return updated comments list
+	 */
+	@RequestMapping("/new_comment")
+	public HashMap<String, Set<Comment>> newComment(@RequestBody HashMap<String, String> request) {
+		// group from where post come
+		String groupId 	 = request.get("group_id");
+		// post where to add comment
+		String postId 	 = request.get("post_id");
+		// add new comment to post comments list
+		groupService.getPost(groupId,postId).getComments()
+			.add(new Comment(
+				request.get("content"),		// comment content
+				userService.getUser(request.get("author"))	// comment author
+			));
+		// update group
+		groupRepository.save(
+			groupService.getGroup(Long.valueOf(groupId))
+		);
+		return new HashMap<String,Set<Comment>>(){{
+			// return comments from updated group
+			put("comments",groupService.getPost(groupId,postId).getComments());
+		}};
 	}
 	@RequestMapping("/member_image")
 	public byte[] memberImage(@RequestBody HashMap<String,String> request) {
@@ -177,17 +200,5 @@ public class HomeController {
 		// member image
 		byte[] image  = member.getProfilePhoto().getBytes();
 		return Base64.encodeBase64(image);
-	}
-
-	@RequestMapping("/add_member")
-	public HashMap<String, String> addMember(@RequestBody HashMap<String, String> member) {
-		// response body
-		HashMap<String, String> response = new HashMap<>();
-		return member;
-	}
-
-	@RequestMapping("/find_member")
-	public User findUser(@RequestBody HashMap<String, String> user) {
-		return userRepository.findByName(user.get("username"));
 	}
 }

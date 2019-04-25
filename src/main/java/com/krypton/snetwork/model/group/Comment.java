@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 @Data
 @Entity
-class Comment {
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,4 +19,11 @@ class Comment {
     @OneToOne
     @JoinColumn(name = "author")
     private User author;
+ 
+    public Comment() {}
+
+    public Comment(String content,User author) {
+      this.content = content;
+      this.author  = author;
+    }
 }

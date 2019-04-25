@@ -49,7 +49,7 @@ function onloadRedirect() {
     getUserGroups()
   }
 }
-/* json from ajax give objects in random 
+/* json from ajax give objects in random
   so we sort them by id */
 function sortJsonObjects(objects) {
   for (let i = 0; i < objects.length; i++) {
@@ -139,12 +139,12 @@ function register(username,email,password) {
 }
 function loginResponseHandler(result,emailfield,passwordfield) {
   // check if login was successful
-  if(result['response'] === 'login success'){
+  if(result['response'] === 'login success') {
     // create cookie with user data : username, email, password
     setCookie(result['account'])
     // redirect to home page
     window.location.replace('/')
-  }else if (result['response'] === 'wrong password'){
+  }else if (result['response'] === 'wrong password') {
     // empty fields
     emailfield.val('')
     passwordfield.val('')
@@ -152,7 +152,6 @@ function loginResponseHandler(result,emailfield,passwordfield) {
 }
 // create cookie
 function setCookie(account) {
-  console.log(account)
   // remove old cookie
   Cookies.remove('account-data',{ path : ''})
   // create new cookie
@@ -230,7 +229,7 @@ function getGroupImage() {
     success : (result) => {
       $('#group-img')
         .attr('src','data:image/jpg;base64,' + result)
-    } 
+    }
   })
 }
 // return cookie data
@@ -268,8 +267,8 @@ function renderGroups(group) {
         // render group photo,posts and members
         renderGroupContainer()
         // load members profile photo
-        for(member in groupData['members']) {
-          membersPhoto(groupData['members'][member])
+        for(i in groupData['members']) {
+          membersPhoto(groupData['members'][i])
         }
       }
     )
@@ -280,20 +279,18 @@ function renderGroupContainer() {
     $('<div/>')
       .attr('class','group-container')
       // append group container elements
-      .append(
-        [
-          // close button
-          groupContainerClose(),
-          // container with new post input/submit
-          newPostContainer(),
-          // div containing posts
-          groupPostsContainer(groupData['posts']),
-          // container stores group image and follow button
-          groupContainerImage(groupData['members']),
-          // container stores group members list
-          groupMembers(groupData['members'])
-        ]
-      )
+      .append([
+        // close button
+        groupContainerClose(),
+        // container with new post input/submit
+        newPostContainer(),
+        // div containing posts
+        groupPostsContainer(groupData['posts']),
+        // container stores group image and follow button
+        groupContainerImage(groupData['members']),
+        // container stores group members list
+        groupMembers(groupData['members'])
+      ])
   )
 }
 // get group members profile photos
@@ -370,23 +367,19 @@ function newPostContainer() {
   return $('<div/>')
     .attr('class','new-post')
     // add elements to new post container
-    .append(
-      [
-        // post content field
-        $('<input/>')
-          .attr(
-            {
-              'class': 'new-post-input',
-              'placeholder': 'Post to group wall'
-            }
-          ),
-        // post submit button
-        $('<button/>')
-          .attr('class','new-post-submit')
-          .html('Post')
-          .click(() => newPost())
-      ]
-    )
+    .append([
+      // post content field
+      $('<input/>')
+        .attr({
+          'class': 'new-post-input',
+          'placeholder': 'Post to group wall'
+        }),
+      // post submit button
+      $('<button/>')
+        .attr('class','new-post-submit')
+        .html('Post')
+        .click(() => newPost())
+    ])
 }
 // group post container
 function groupPostsContainer(posts) {
@@ -396,9 +389,9 @@ function groupPostsContainer(posts) {
   // sort posts
   const sortedPosts = sortJsonObjects(posts)
   // append to container all posts
-  for (post in sortedPosts) {
+  for (i in sortedPosts) {
     // append post div
-    groupPosts.append(groupPost(sortedPosts[post]))
+    groupPosts.append(groupPost(sortedPosts[i]))
   }
   return groupPosts
 }
@@ -406,38 +399,39 @@ function groupPost(post) {
   // post div
   return $('<div/>')
     .attr('class','group-post')
-    .append(
-      [
-        // post header
-        $('<div/>')
-          .attr('class','group-post-header')
-          .append(
-            // post author image and name
-            postAuthor(post['author']),
-            // time when post was created
-            $('<span/>')
-              .attr('class','post-time')
-              .html(timeConverter(post['time']))
-          ),
-        // content text
-        $('<div/>')
-          .attr('class','post-content-box')
-          .append(
-            $('<p/>')
-              .html(post['content'])
-          ),
-        // post footer
-        $('<div/>')
-          .attr('class','group-post-footer')
-          .append(likeButton(post))
-      ]
-    )
+    .append([
+      // post header
+      $('<div/>')
+        .attr('class','group-post-header')
+        .append(
+          // post author image and name
+          postAuthor(post['author']),
+          // time when post was created
+          $('<span/>')
+            .attr('class','post-time')
+            .html(timeConverter(post['time']))
+        ),
+      // content text
+      $('<div/>')
+        .attr('class','post-content-box')
+        .append(
+          $('<p/>')
+            .html(post['content'])
+        ),
+      // post footer
+      $('<div/>')
+        .attr('class','group-post-footer')
+        .append([
+          likeButton(post),
+          commentButton(post)
+        ])
+    ])
 }
 // convert time from long to hour and minute format
 function timeConverter(time) {
-    let date = new Date(parseInt(time));
-    let localeSpecificTime = date.toLocaleTimeString();
-    return localeSpecificTime.replace(/:\d+ /, ' ');
+    return new Date(parseInt(time))
+      .toLocaleTimeString()
+      .replace(/:\d+ /, ' ');
   }
 // post author image and username
 function postAuthor(author) {
@@ -446,15 +440,14 @@ function postAuthor(author) {
     $('<span/>')
       .html(author['username'])
       .css({
-        'line-height':'250%',
+        'line-height':'200%',
         'margin-left':'10px'
       }),
     // author image
     $('<div/>')
       .attr('class','post-author-image')
       .css({
-        'float':'left',
-        'padding-top':'5px'
+        'float':'left'
       })
       .append(
         $('<img/>')
@@ -477,6 +470,7 @@ function likeButton(post) {
     .append(
       $('<i/>')
         .attr('class','fas fa-heart')
+        // likes count number on icon
         .html(' ' + post['likes'].length)
     )
   // like button settings based on liked status
@@ -506,10 +500,134 @@ function sendLike(post,action) {
     data : JSON.stringify({
       'group_id' : groupData['id'],
       'post_id'  : post['id'],
-      'user_id'  : getUser()['id']
+      'author_id'  : getUser()['id']
     }),
     success: (result) => {
       updatePosts()
+    }
+  })
+}
+// post comments button
+function commentButton(post) {
+  // comments button
+  return $('<button/>')
+    .attr('class','comment-button')
+    .append(
+      $('<i/>')
+        .attr('class','fas fa-comment')
+        // comments count number on icon
+        .html(' ' + post['comments'].length)
+    )
+    .click(() => showCommentsContainer(post))
+}
+// dialog showing post comments
+function showCommentsContainer(post) {
+  // disable scroll while comments are shown
+  $('.group-container')
+    .css('overflow','hidden')
+  // append comments container to group container
+  $('.group-container').append(
+    // comments container div
+    $('<div/>')
+      .attr('class','comments-container')
+      // comments container elements
+      .append(
+        commentsContainer(post)
+      )
+  )
+}
+// container containing comments
+function commentsContainer(post) {
+  return [
+    $('<p/>')
+      .css({
+        'left':'45%',
+        'top':'-5px',
+        'position':'absolute'
+      })
+      .html('Comments'),
+    // comments back button
+    $('<i/>')
+      .attr('class','fas fa-chevron-left')
+      .css({
+        'margin': '10px',
+        'color' : '#F44256',
+        'cursor': 'pointer'
+      })
+      .click(() => {
+        // remove comments container
+        $('.comments-container').remove()
+        // restore group container scroll
+        $('.group-container').css('overflow','auto')
+      }),
+    // comments divs
+    postComments(post),
+    $('<div/>')
+      .attr('class','comments-footer')
+      .append(
+        // new comment input
+        $('<input/>')
+          .attr({
+            'class':'comment-input',
+            'placeholder':'Comment'
+          }),
+        // send comment button
+        $('<button/>')
+          .attr('class','comment-submit')
+          .html('Send')
+          .click(() =>
+            sendComment(post)
+          )
+      )
+  ]
+}
+// comments divs
+function postComments(post) {
+  // comments data
+  const comments = post['comments']
+  const commentsBox = $('<div/>')
+    .attr('class','comments')
+    .css({
+      'overflow':'auto',
+      'max-height':'420px'
+    })
+  // add all comments divs 
+  for (i in comments) {
+    commentsBox.append(
+      // comment div
+      $('<div/>')
+        .attr('class','comment')
+        // comment elements
+        .append(
+          // author
+          postAuthor(comments[i]['author']),
+          // content
+          $('<p/>')
+            .css({
+              'margin-top':'5px',
+              'overflow-wrap':'break-word'
+            })
+            .html(comments[i]['content']),
+        )
+    )
+  }
+  return commentsBox
+}
+function sendComment(post) {
+  // ajax post request
+  $.ajax({
+    type : 'POST',
+    contentType : 'application/json; charset=utf-8',
+    url : 'http://localhost:8080/new_comment',
+    data : JSON.stringify({
+      'group_id' : groupData['id'],
+      'post_id'  : post['id'],
+      'content'  : $('.comment-input').val(),
+      'author'  : getUser()['email']
+    }),
+    success: (result) => {
+      updatePosts(post['id'])
+      updateComments(result)
     }
   })
 }
@@ -532,21 +650,19 @@ function groupContainerImage(members) {
   return imageContainer = $('<div/>')
     .attr('class','group-image-container')
     // container elements
-    .append(
-      [
-        // group image
-        $('<div/>')
-          .attr('class','group-image')
-          .append(
-            $('<img/>')
-              .attr('id','group-img')
-          ),
-        // group follow button
-        $('<button/>')
-          .attr('class','group-follow')
-          .html(followText)
-      ]
-    )
+    .append([
+      // group image
+      $('<div/>')
+        .attr('class','group-image')
+        .append(
+          $('<img/>')
+            .attr('id','group-img')
+        ),
+      // group follow button
+      $('<button/>')
+        .attr('class','group-follow')
+        .html(followText)
+    ])
 }
 // container with group members at bottom left
 function groupMembers(members) {
@@ -567,28 +683,36 @@ function groupMembers(members) {
 function groupMember(member) {
   return $('<div>')
     .attr('class','group-member')
-    .append(
-      [
-        $('<div/>')
-          .attr('class','group-member-image')
-          .append(
-            $('<img/>')
-              .attr('id','member' + member['id'] + 'image')
-          ),
-        $('<span/>')
-          .attr('class','group-member-name')
-          .html(member['username'])
-      ]
-    )
+    .append([
+      $('<div/>')
+        .attr('class','group-member-image')
+        .append(
+          $('<img/>')
+            .attr('id','member' + member['id'] + 'image')
+        ),
+      $('<span/>')
+        .attr('class','group-member-name')
+        .html(member['username'])
+    ])
 }
 // update posts in group container
 function updatePosts() {
   // remove posts
-  $('.group-posts').remove()
+  $('.group-posts').empty()
   // update group data
   getGroupData(groupData)
-  // append to group container new group
-  $('.group-container').append(
-    groupPostsContainer(groupData['posts'])
-  )
+  // sort posts
+  const sortedPosts = sortJsonObjects(groupData['posts'])
+  // append to container all posts
+  for (i in sortedPosts) {
+    // append post div
+    $('.group-posts').append(groupPost(sortedPosts[i]))
+  }
+}
+// update post comments
+function updateComments(comments) {
+  // remove comments
+  $('.comments-container').empty()
+  // update comments container
+  $('.comments-container').append(commentsContainer(comments))
 }
