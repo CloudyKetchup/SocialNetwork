@@ -496,7 +496,6 @@ function sendLike(post,action) {
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
     url : 'http://localhost:8080/' + action,
-    async: false,
     data : JSON.stringify({
       'group_id' : groupData['id'],
       'post_id'  : post['id'],
@@ -591,8 +590,9 @@ function postComments(post) {
       'overflow':'auto',
       'max-height':'420px'
     })
+  const sortedComments = sortJsonObjects(comments)
   // add all comments divs 
-  for (i in comments) {
+  for (i in sortedComments) {
     commentsBox.append(
       // comment div
       $('<div/>')
@@ -600,14 +600,14 @@ function postComments(post) {
         // comment elements
         .append(
           // author
-          postAuthor(comments[i]['author']),
+          postAuthor(sortedComments[i]['author']),
           // content
           $('<p/>')
             .css({
               'margin-top':'5px',
               'overflow-wrap':'break-word'
             })
-            .html(comments[i]['content']),
+            .html(sortedComments[i]['content']),
         )
     )
   }
@@ -710,9 +710,9 @@ function updatePosts() {
   }
 }
 // update post comments
-function updateComments(comments) {
+function updateComments(post) {
   // remove comments
   $('.comments-container').empty()
   // update comments container
-  $('.comments-container').append(commentsContainer(comments))
+  $('.comments-container').append(commentsContainer(post))
 }
