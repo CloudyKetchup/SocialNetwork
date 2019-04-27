@@ -73,7 +73,6 @@ function loginTrigger() {
 }
 // login request
 function login(emailfield,passwordfield) {
-  // ajax post request
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
@@ -116,7 +115,6 @@ function register(username,email,password) {
       'password': password.val()
    })
   )
-  // ajax post request
   $.ajax({
     type : 'POST',
     url : 'http://localhost:8080/register',
@@ -165,17 +163,15 @@ function setCookie(account) {
 }
 // create new group request
 function createGroup() {
-  // const resizedImage = resizeImage(
-  //   $("#choose-group-image").prop('files')[0]
-  // )
   const formData = new FormData()
   // image file
   formData.append('image', $("#choose-group-image").prop('files')[0])
+  // background file
+  formData.append('background', $("#choose-group-background").prop('files')[0])
   // group name
   formData.append('name' , $('#group-name').val())
   // group admin email
   formData.append('admin', getUser()['email'])
-  // ajax post request
   $.ajax({
     type : 'POST',
     url : 'http://localhost:8080/new_group',
@@ -185,7 +181,6 @@ function createGroup() {
     success : (result) => {
       // check if group was created
       if (result['response'] === 'group created') {
-        // send group image
         // clear groups list
         $('.groups-box').empty()
         // update user groups
@@ -203,7 +198,6 @@ function createGroup() {
 }
 // get group data like posts,images,members...
 function getGroupData(group) {
-  // ajax post request
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
@@ -215,6 +209,7 @@ function getGroupData(group) {
     success : (result) => {
       groupData = $.extend(true, {}, result['group'])
       getGroupImage()
+      getGroupBackground()
     }
   })
 }
@@ -227,8 +222,22 @@ function getGroupImage() {
       'id' : groupData['id']
     }),
     success : (result) => {
-      $('#group-img')
+      $('.group-image')
         .attr('src','data:image/jpg;base64,' + result)
+    }
+  })
+}
+function getGroupBackground() {
+  $.ajax({
+    type : 'POST',
+    contentType : 'application/json; charset=utf-8',
+    url : 'http://localhost:8080/group_background',
+    data : JSON.stringify({
+      'id' : groupData['id']
+    }),
+    success : (result) => {
+      $('.group-header')
+        .css('background-image','url(data:image/jpg;base64,' + result + ')')
     }
   })
 }
@@ -238,7 +247,6 @@ function getUser() {
 }
 // request user groups json
 function getUserGroups() {
-  // ajax post request
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
@@ -263,6 +271,7 @@ function renderGroups(group) {
       .html(group['name'])
       .attr('class','group')
       .click(() => {
+        $('.group-container').remove()
         getGroupData(group)
         // render group photo,posts and members
         renderGroupContainer()
@@ -279,23 +288,37 @@ function renderGroupContainer() {
     $('<div/>')
       .attr('class','group-container')
       // append group container elements
-      .append([
-        // close button
-        groupContainerClose(),
-        // container with new post input/submit
-        newPostContainer(),
-        // div containing posts
-        groupPostsContainer(groupData['posts']),
-        // container stores group image and follow button
-        groupContainerImage(groupData['members']),
-        // container stores group members list
-        groupMembers(groupData['members'])
-      ])
+      .append(
+        // group header
+        $('<div/>')
+          .attr('class','group-header')
+          .append(
+            $('<div/>')
+              .attr('class','group-header-overlay'),
+            // close button
+            groupContainerClose(),
+            // group follow button
+            groupFollow(),
+            // container with new post input/submit
+            newPostContainer(),
+            $('<p/>')
+              .html(groupData['members'].length + '  Followers'),
+            // container storing group images
+            groupContainerImage(),
+          ),
+        $('<div/>')
+          .attr('class','group-content')
+          .append(
+            // div containing posts
+            groupPostsContainer(groupData['posts']),
+            // container stores group members list
+            groupMembers(groupData['members'])
+          )
+      )
   )
 }
 // get group members profile photos
 function membersPhoto(member) {
-  // ajax post request
   $.ajax({
     type : 'POST',
     url : 'http://localhost:8080/member_image',
@@ -312,7 +335,6 @@ function membersPhoto(member) {
 }
 function postAuthorPhoto(author) {
   let photo
-  // ajax post request
   $.ajax({
     type : 'POST',
     url : 'http://localhost:8080/post_author_image',
@@ -332,7 +354,7 @@ function groupContainerClose() {
   return $('<span/>')
     .attr('id','close')
     .append('<i/>')
-      .attr('class','fas fa-times-circle')
+      .attr('class','fas fa-chevron-left')
       .click(() =>
         // remove group container from main container
         $('.group-container').remove()
@@ -341,7 +363,6 @@ function groupContainerClose() {
 // send new post to group via request
 function newPost() {
   const contentInput = $('.new-post-input')
-  // ajax post request
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
@@ -377,7 +398,10 @@ function newPostContainer() {
       // post submit button
       $('<button/>')
         .attr('class','new-post-submit')
-        .html('Post')
+        .append(
+          $('<i/>')
+            .attr('class','fa fa-paper-plane')
+        )
         .click(() => newPost())
     ])
 }
@@ -446,9 +470,6 @@ function postAuthor(author) {
     // author image
     $('<div/>')
       .attr('class','post-author-image')
-      .css({
-        'float':'left'
-      })
       .append(
         $('<img/>')
           .attr('src','data:image/jpg;base64,' + postAuthorPhoto(author))
@@ -491,7 +512,6 @@ function likeButton(post) {
 }
 // send group post like with action add/remove
 function sendLike(post,action) {
-  // ajax post request
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
@@ -614,7 +634,6 @@ function postComments(post) {
   return commentsBox
 }
 function sendComment(post) {
-  // ajax post request
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
@@ -632,37 +651,37 @@ function sendComment(post) {
   })
 }
 // group image in container in top right corner
-function groupContainerImage(members) {
+function groupContainerImage() {
+  // top right container that stores group image
+  return imageContainer = $('<div/>')
+    .attr('class','group-image-container')
+    // container elements
+    .append(
+      // group image
+      $('<img/>')
+        .attr('class','group-image'),
+      $('<span/>')
+        .html(groupData['name'])
+    )
+}
+function groupFollow() {
   // group follow button text
   let followText = 'Follow'
   // user email from cookie
   const email    = getUser()['email']
   // check if user is following group and change follow button text
-  for (i in members) {
+  for (i in groupData['members']) {
     // check if user is in group members list
-    if (members[i]['email'] === email){
+    if (groupData['members'][i]['email'] === email){
       // change follow button text
       followText = 'Following'
       break
     }
   }
-  // top right container that stores group image and follow button
-  return imageContainer = $('<div/>')
-    .attr('class','group-image-container')
-    // container elements
-    .append([
-      // group image
-      $('<div/>')
-        .attr('class','group-image')
-        .append(
-          $('<img/>')
-            .attr('id','group-img')
-        ),
-      // group follow button
-      $('<button/>')
-        .attr('class','group-follow')
-        .html(followText)
-    ])
+  // group follow button
+  return $('<button/>')
+    .attr('class','group-follow')
+    .html(followText)
 }
 // container with group members at bottom left
 function groupMembers(members) {
