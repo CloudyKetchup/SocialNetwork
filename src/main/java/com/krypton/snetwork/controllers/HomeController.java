@@ -66,23 +66,37 @@ public class HomeController {
 	 */
 	@RequestMapping("/group_image")
     public byte[] groupImage(@RequestBody HashMap<String, String> request) {
-	// load group image  from database
+		// load group image from database
         byte[] image = groupService.getGroup(Long.valueOf(request.get("id")))
 				.getGroupImage().getBytes();
 		return Base64.encodeBase64(image);
     }
+    /**
+	 * get group background in base64 byte format
+	 * @param request 	group id
+	 * @return group background in base64 format
+	 */
+	@RequestMapping("/group_background")
+    public byte[] groupBackground(@RequestBody HashMap<String, String> request) {
+		// load group background from database
+        byte[] background = groupService.getGroup(Long.valueOf(request.get("id")))
+				.getGroupBackground().getBytes();
+		return Base64.encodeBase64(background);
+    }
 	/**
 	 * post request for creating new group
-	 * @param image 	group photo from form data
-	 * @param name  	group name
-	 * @param admin 	admin email
+	 * @param image 	 group photo
+	 * @param background group background photo
+	 * @param name  	 group name
+	 * @param admin 	 admin email
 	 * @return message "group already exist" or "group created"
 	 */
 	@RequestMapping("/new_group")
 	public HashMap<String, String> newGroup(
-		@RequestParam("image") MultipartFile image,
-		@RequestParam("name") String name,
-		@RequestParam("admin") String admin
+		@RequestParam("image") 		MultipartFile image,
+		@RequestParam("background") MultipartFile background,
+		@RequestParam("name") 		String name,
+		@RequestParam("admin") 		String admin
 	) {
 		// check if room with that name exist
 		if (groupService.groupExist(name)) {
@@ -90,9 +104,11 @@ public class HomeController {
 				put("response","group already exist");
 			}};
 		}else {
-			// insert photo to database
+			// insert group photo to database
 			imageService.insertImage(name, image);
-			// insert group to database
+			// insert group background to database
+			imageService.insertBackground(name, background);
+			// insert group to database 
 			groupService.insertGroup(name, admin);
 			return new HashMap<>(){{
 				put("response","group created");
@@ -174,7 +190,7 @@ public class HomeController {
 	 * @return updated comments list
 	 */
 	@RequestMapping("/new_comment")
-	public HashMap<String, Set<Comment>> newComment(@RequestBody HashMap<String, String> request) {
+	public HashMap<String, Post> newComment(@RequestBody HashMap<String, String> request) {
 		// group from where post come
 		String groupId 	 = request.get("group_id");
 		// post where to add comment
@@ -189,9 +205,9 @@ public class HomeController {
 		groupRepository.save(
 			groupService.getGroup(Long.valueOf(groupId))
 		);
-		return new HashMap<String,Set<Comment>>(){{
+		return new HashMap<String,Post>(){{
 			// return comments from updated group
-			put("comments",groupService.getPost(groupId,postId).getComments());
+			put("comments",groupService.getPost(groupId,postId));
 		}};
 	}
 	@RequestMapping("/member_image")

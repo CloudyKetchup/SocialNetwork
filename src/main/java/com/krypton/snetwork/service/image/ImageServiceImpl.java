@@ -19,11 +19,11 @@ public class ImageServiceImpl implements ImageService{
 	private ImageRepository imageRepository;
 
 	@Override
-	public void insertImage(String email, MultipartFile image) {
+	public void insertImage(String name, MultipartFile image) {
 		try {
-			// group bytes entity
-			Image imageEntity = createImage(email, image);
-			// save bytes to database
+			// group image entity
+			Image imageEntity = createImage(name, image);
+			// save image to database
 			imageRepository.save(imageEntity);
 		}catch (IOException e) {
 			e.printStackTrace();
@@ -31,20 +31,47 @@ public class ImageServiceImpl implements ImageService{
 	}
 
 	@Override
-	public Image createImage(String email, MultipartFile image) throws IOException {
-		// resize bytes
-		byte[] resizedImage = resizeImage(multipartToFile(image),800,800);
-		// bytes entity
+	public void insertBackground(String name, MultipartFile background) {
+		try {
+			// group background entity
+			Image imageEntity = createBackground(name, background);
+			// save background to database
+			imageRepository.save(imageEntity);
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public Image createImage(String name, MultipartFile image) throws IOException {
+		byte[] resizedImage = resizeImage(multipartToFile(image),500,500);
+		// image entity
 		return new Image(
-			email + "-photo",		// image name
-			image.getContentType(),		// bytes type
-			resizedImage            // bytes bytes
+			name + "-photo",
+			image.getContentType(),
+			resizedImage
 		);
 	}
 	
 	@Override
-	public Image getImage(String email) {
-		return imageRepository.findByName(email + "-photo");
+	public Image getImage(String name) {
+		return imageRepository.findByName(name + "-photo");
+	}
+
+	@Override
+	public Image createBackground(String name, MultipartFile background) throws IOException {
+		byte[] resizedBackground = resizeImage(multipartToFile(background),1280,720);
+		// background entity
+		return new Image(
+			name + "-background",
+			background.getContentType(),
+			resizedBackground
+		); 
+	}
+
+	@Override
+	public Image getBackground(String name) {
+		return imageRepository.findByName(name + "-background");	
 	}
 
 	@Override

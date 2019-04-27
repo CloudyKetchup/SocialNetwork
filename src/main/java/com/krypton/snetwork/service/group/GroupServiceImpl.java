@@ -30,21 +30,23 @@ public class GroupServiceImpl implements GroupService {
 	@Override
 	public void insertGroup(String name, String email) {
 		// get admin entity from database
-		User admin  = userService.getUser(email);
-		// get group bytes entity from database
-		Image image = imageService.getImage(name);
+		User admin  	 = userService.getUser(email);
+		// get group photo entity from database
+		Image image 	 = imageService.getImage(name);
+		// get group background entity bytes from database 
+		Image background = imageService.getBackground(name);
 		// create group entity and return as object
-		Group group = createGroup(name, admin, image);
+		Group group 	 = createGroup(name, admin, image, background);
 		// save new group entity to admin
 		saveGroupMember(group, admin);
 		// save admin entity to group
 		userService.saveMemberGroup(group, admin);
 	}
-	
+
 	@Override
-	public Group createGroup(String name, User admin, Image image) {
+	public Group createGroup(String name, User admin, Image image, Image background) {
 		// group entity
-		return new Group(name, admin, image);
+		return new Group(name, admin, image, background);
 	}
 	
 	@Override

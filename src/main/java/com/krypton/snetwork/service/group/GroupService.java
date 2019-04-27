@@ -25,7 +25,7 @@ public interface GroupService {
 	 * @param admin 	admin email
 	 * @param image 	group avatar bytes
 	 */
-	public Group createGroup(String name, User admin, Image image);
+	public Group createGroup(String name, User admin, Image image, Image background);
 	/**
 	 * add new member to group members list
 	 * @param group 	group entity

@@ -9,11 +9,17 @@ import java.io.IOException;
 public interface ImageService {
 
 	/**
-	 * save new image entity to database with image file
+	 * save new image entity to database
 	 * @param name 		image entity name
-	 * @param image 	image multipart file from request
+	 * @param image 	image file from request
 	 */
 	public void insertImage(String name, MultipartFile image);
+	/**
+	 * save new background to database
+	 * @param name 		 image entity name
+	 * @param background background file from request
+	 */
+	public void insertBackground(String name, MultipartFile background);
 	/** 
 	 * create image entity
 	 * @param name  	image entity name
@@ -27,7 +33,22 @@ public interface ImageService {
 	 * @param name 		image name
 	 * @return image entity
 	 */
-	public Image getImage(String name);/**
+	public Image getImage(String name);
+	/** 
+	 * create background entity
+	 * @param name  		background entity name
+	 * @param background 	background  file from request
+	 * @throws IOException
+	 * @return background entity
+	 */
+	public Image createBackground(String name, MultipartFile background) throws IOException;
+	/**
+	 * get background entity by name
+	 * @param name 		background name
+	 * @return background entity
+	 */
+	public Image getBackground(String name);
+	/**
 	 * get image entity by name
 	 * @param id 		image name
 	 * @return image entity
