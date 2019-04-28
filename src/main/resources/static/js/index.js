@@ -321,7 +321,7 @@ function renderGroupContainer() {
 function membersPhoto(member) {
   $.ajax({
     type : 'POST',
-    url : 'http://localhost:8080/member_image',
+    url : 'http://localhost:8080/user_image',
     contentType : 'application/json; charset=utf-8',
     data : JSON.stringify({
       'email' : member['email']

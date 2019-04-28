@@ -25,6 +25,7 @@ dependencies {
 	compile 'org.springframework.boot:spring-boot-devtools'
     compile 'org.hibernate:hibernate-core:5.4.2.Final'
 	compile 'mysql:mysql-connector-java:5.1.6'
+	compile 'net.coobird:thumbnailator:0.4.8'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

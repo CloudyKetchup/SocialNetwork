@@ -2,6 +2,7 @@ package com.krypton.snetwork.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.krypton.snetwork.model.group.Group;
+import com.krypton.snetwork.model.group.Post;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,6 +42,14 @@ public class User {
     @JsonIgnore
     Set<Group> groups = new HashSet<>();
 
+    @ManyToMany
+    @JsonIgnore
+    private Set<User> friends = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(cascade = CascadeType.ALL)
+    private Set<Post> posts = new HashSet<>();
+
     public User() {}
 
     public User(
@@ -55,4 +64,3 @@ public class User {
         this.profilePhoto = profilePhoto;
     }
 }
-

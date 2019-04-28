@@ -55,6 +55,7 @@ public class AuthController{
         // get user from database
         User dbUser = userService.getUser(email);
         if (dbUser != null) {
+            // check if password is correct
             if (dbUser.getPassword().equals(password)) {
                 response = new HashMap<>(){{
                     put("response", "login success");
@@ -98,7 +99,7 @@ public class AuthController{
                 put("response","account exist");
             }};
         }else {
-            // insert user profile bytes to database
+            // insert user profile photo to database
             imageService.insertImage(email,image);
             // save user entity to database
             userService.saveUser(
@@ -113,12 +114,10 @@ public class AuthController{
         }
     }
     /**
-     * parses json from string to hashmap
+     * parses json from string to hash map
      * @param json		String with keys and values
      */
-    public static HashMap<String, String> stringToHashMap(String json) {
-        // hashmap parsed from string
-        HashMap<String, String> parsedHashMap = new HashMap<>();
+    private HashMap<String, String> stringToHashMap(String json) {
         // remove curly brackets
         json = json.substring(1, json.length()-1);
         // split string to create key/value pairs
@@ -127,12 +126,14 @@ public class AuthController{
         for (String pair : keyValuePairs) {
             // split pair in key and value
             String[] entry = pair.split(":");
-            // put key and value to parsed hashmap
-            parsedHashMap.put(
-                    entry[0].replace('"',' ').trim(),
-                    entry[1].replace('"',' ').trim()
-            );
+            // put key and value to parsed hash map
+            return new HashMap<>(){{
+                    put(
+                        entry[0].replace('"',' ').trim(),
+                        entry[1].replace('"',' ').trim()
+                    );
+                }};
         }
-        return parsedHashMap;
+        return null;
     }
 }
