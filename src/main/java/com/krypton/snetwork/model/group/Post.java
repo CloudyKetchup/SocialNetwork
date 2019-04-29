@@ -1,13 +1,15 @@
 package com.krypton.snetwork.model.group;
 
-import com.krypton.snetwork.model.User;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.krypton.snetwork.model.user.User;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter@Setter
 @Entity
 @Table(name = "Posts")
 public class Post {
@@ -17,19 +19,20 @@ public class Post {
     private Long id;
 
     @Column
+    private Long time;
+
+    @Column
+    private String content;
+
+    @Column
     @ElementCollection
     private Set<Long> likes = new HashSet<>();
 
     @OneToMany(cascade = CascadeType.ALL)
     private Set<Comment> comments = new HashSet<>();
 
-    @JoinColumn(name = "content")
-    private String content;
-
-    @Column
-    private Long time;
-
     @OneToOne(cascade = CascadeType.ALL)
+    @JsonIgnore
     private User author;
 
     public Post() {}

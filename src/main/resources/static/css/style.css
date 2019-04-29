@@ -117,14 +117,18 @@ input {
 .feed {
 	display: block;
     margin-left: auto;
-	margin-right: auto;
-	left: 0;
-	right: 0;
-	bottom: 4%;
-    min-height: 80%;
-    width: 56%;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    min-height: 95%;
+    width: 65%;
     border-radius: 5px;
     position: absolute;
+}
+.feed-content {
+	margin-top: 50px;
+	background-color: #d6d2d2;
+	border-radius: 5px;
 }
 #create-group {
 	background: none;
@@ -236,7 +240,7 @@ input {
     margin-left: -1%;
     text-align: right;
 }
-.group-post {
+.post {
 	background-color: #a7a7a757;
 	color: #161616;
 	display: inline-block;
@@ -326,7 +330,7 @@ input {
 	color: white;
     margin-left: 20px;
 }
-.group-post-header {
+.post-header {
 	display: inline-block;
 	width: 100%;
 }
@@ -403,6 +407,16 @@ input {
 	animation-name: fadein;
 	animation-duration: 0.2s;
 	transform: translate(-50%, -50%);
+}
+.comments-paragraph {
+	left: 45%;
+	top: -5px;
+	position :absolute;
+}
+.comments-back-icon {
+	margin: 10px;
+	color: #F44256;
+	cursor: pointer;
 }
 .comments-footer {
     bottom: 0;

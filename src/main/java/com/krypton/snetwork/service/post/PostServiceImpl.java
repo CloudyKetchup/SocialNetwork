@@ -1,12 +1,8 @@
 package com.krypton.snetwork.service.post;
 
-import com.krypton.snetwork.model.group.Comment;
-import com.krypton.snetwork.model.group.Group;
-import com.krypton.snetwork.model.group.Post;
+import com.krypton.snetwork.model.group.*;
 import com.krypton.snetwork.model.user.User;
-import com.krypton.snetwork.repository.GroupRepository;
-import com.krypton.snetwork.repository.PostRepository;
-import com.krypton.snetwork.repository.UserRepository;
+import com.krypton.snetwork.repository.*;
 import com.krypton.snetwork.service.group.GroupService;
 import com.krypton.snetwork.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +65,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void addLike(Long id, Long authorId) {
         Post post = getPost(id);
-        post.getLikes().add(id);
+        post.getLikes().add(authorId);
         // update post
         postRepository.save(post);
     }
@@ -77,7 +73,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void removeLike(Long id, Long authorId) {
         Post post = getPost(id);
-        post.getLikes().remove(id);
+        post.getLikes().remove(authorId);
         // update post
         postRepository.save(post);
     }
