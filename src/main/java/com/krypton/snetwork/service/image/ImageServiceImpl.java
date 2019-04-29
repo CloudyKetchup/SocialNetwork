@@ -3,17 +3,18 @@ package com.krypton.snetwork.service.image;
 import com.krypton.snetwork.model.Image;
 import com.krypton.snetwork.repository.ImageRepository;
 import net.coobird.thumbnailator.Thumbnails;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 
 @Service
-public class ImageServiceImpl implements ImageService{
+public class ImageServiceImpl implements ImageService {
 
 	@Autowired
 	private ImageRepository imageRepository;
@@ -79,20 +80,20 @@ public class ImageServiceImpl implements ImageService{
 		return imageRepository.findById(id).get();
 	}
 
-	public File multipartToFile(MultipartFile file) {
-		File convFile = new File(
+	private File multipartToFile(MultipartFile file) {
+		File fileDir = new File(
 			System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename()
 		);
 		try {
-			file.transferTo(convFile);
+			file.transferTo(fileDir);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return convFile;
+		return fileDir;
 	}
 	@Override
 	public byte[] resizeImage(File image, int width, int height) throws IOException{
-		// resize bytes to choosen width and height
+		// resize bytes to given width and height
 		BufferedImage resizedImage = Thumbnails.of(image).size(width,height).asBufferedImage();
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
