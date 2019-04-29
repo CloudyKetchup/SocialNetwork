@@ -1,14 +1,15 @@
 package com.krypton.snetwork.model.group;
 
-import com.krypton.snetwork.model.User;
 import com.krypton.snetwork.model.Image;
-import lombok.Getter;
-import lombok.Setter;
+import com.krypton.snetwork.model.common.EntityType;
+import com.krypton.snetwork.model.user.User;
+import lombok.Data;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
-@Getter@Setter
+@Data
 @Entity
 @Table(name = "Groups")
 public class Group {
@@ -21,29 +22,38 @@ public class Group {
 	private String name;
 
 	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "image_id")
-	private Image groupImage;
-
-	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "background_id")
-	private Image groupBackground;
-
-	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name  = "admin_id")
 	private User admin;
 
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "image_id")
+	private Image profilePhoto;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "background_id")
+	private Image backgroundPhoto;
+
 	@ManyToMany
-	private Set<User> members = new HashSet<>();
+	private Set<User> followers = new HashSet<>();
 
 	@OneToMany(cascade = CascadeType.ALL)
 	private Set<Post> posts = new HashSet<>();
 
+	@Column
+	private EntityType type;
+
 	public Group() {}
 
-	public Group(String name,User admin,Image groupImage,Image groupBackground) {
-		this.name			 = name;
+	public Group(
+			String name,
+			User admin,
+			Image profilePhoto,
+			Image backgroundPhoto
+	) {
+		this.name  			 = name;
 		this.admin 			 = admin;
-		this.groupImage 	 = groupImage;
-		this.groupBackground = groupBackground;
+		this.profilePhoto 	 = profilePhoto;
+		this.backgroundPhoto = backgroundPhoto;
+		this.type 			 = EntityType.GROUP;
 	}
 }

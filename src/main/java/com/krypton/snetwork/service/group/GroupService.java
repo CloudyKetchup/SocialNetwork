@@ -2,9 +2,7 @@ package com.krypton.snetwork.service.group;
 
 import com.krypton.snetwork.model.Image;
 import com.krypton.snetwork.model.group.Group;
-import com.krypton.snetwork.model.group.Post;
-import com.krypton.snetwork.model.User;
-import java.io.IOException;
+import com.krypton.snetwork.model.user.User;
 
 public interface GroupService {
 
@@ -42,10 +40,4 @@ public interface GroupService {
 	 * @param id 		group id
 	 */
 	public Group getGroup(Long id);
-	/**
-	 * get post entity by id
-	 * @param groupId 	group from where post comes
-	 * @param postId 	post id
-	 */
-	public Post getPost(String groupId, String postId);
 }

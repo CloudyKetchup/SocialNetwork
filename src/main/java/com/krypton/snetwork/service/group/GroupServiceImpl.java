@@ -1,9 +1,8 @@
 package com.krypton.snetwork.service.group;
 
 import com.krypton.snetwork.model.Image;
-import com.krypton.snetwork.model.User;
 import com.krypton.snetwork.model.group.Group;
-import com.krypton.snetwork.model.group.Post;
+import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.repository.GroupRepository;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
@@ -37,6 +36,7 @@ public class GroupServiceImpl implements GroupService {
 		Image background = imageService.getBackground(name);
 		// create group entity and return as object
 		Group group 	 = createGroup(name, admin, image, background);
+		System.out.println(group);
 		// save new group entity to admin
 		saveGroupMember(group, admin);
 		// save admin entity to group
@@ -45,13 +45,12 @@ public class GroupServiceImpl implements GroupService {
 
 	@Override
 	public Group createGroup(String name, User admin, Image image, Image background) {
-		// group entity
 		return new Group(name, admin, image, background);
 	}
 	
 	@Override
 	public void saveGroupMember(Group group, User member) {
-		group.getMembers().add(member);
+		group.getFollowers().add(member);
 		groupRepository.save(group);
 	}
 	
@@ -64,18 +63,4 @@ public class GroupServiceImpl implements GroupService {
 	public Group getGroup(Long id) {
 		return groupRepository.findById(id).get();
 	}
-	
-	@Override
-    public Post getPost(String groupId, String postId) {
-    	final Post[] posts = new Post[1];
-		// get group where that contains post
-		getGroup(Long.valueOf(groupId))
-			// find post by id
-			.getPosts().forEach(post ->  {
-				if (post.getId().equals(Long.valueOf(postId))) {
-					posts[0] = post;
-				}
-			});
-		return posts[0];
-    }
 }
