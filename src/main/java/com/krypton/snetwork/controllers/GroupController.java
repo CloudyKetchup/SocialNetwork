@@ -4,7 +4,10 @@ import com.krypton.snetwork.service.group.GroupServiceImpl;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
@@ -38,7 +41,7 @@ public class GroupController {
     public byte[] groupImage(@RequestBody HashMap<String, String> request) {
         // load group image from database
         byte[] image = groupService.getGroup(Long.valueOf(request.get("id")))
-                .getGroupImage().getBytes();
+                .getProfilePhoto().getBytes();
         return Base64.encodeBase64(image);
     }
     /**
@@ -50,7 +53,7 @@ public class GroupController {
     public byte[] groupBackground(@RequestBody HashMap<String, String> request) {
         // load group background from database
         byte[] background = groupService.getGroup(Long.valueOf(request.get("id")))
-                .getGroupBackground().getBytes();
+                .getBackgroundPhoto().getBytes();
         return Base64.encodeBase64(background);
     }
     /**
@@ -65,8 +68,8 @@ public class GroupController {
     public HashMap<String, String> newGroup(
             @RequestParam("image") MultipartFile image,
             @RequestParam("background") MultipartFile background,
-            @RequestParam("name") 		String name,
-            @RequestParam("admin") 		String admin
+            @RequestParam("name") String name,
+            @RequestParam("admin") String admin
     ) {
         // check if room with that name exist
         if (groupService.groupExist(name)) {
