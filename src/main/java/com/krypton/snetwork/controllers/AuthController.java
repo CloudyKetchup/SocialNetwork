@@ -1,8 +1,8 @@
 package com.krypton.snetwork.controllers;
 
-import com.krypton.snetwork.model.User;
-import com.krypton.snetwork.service.user.UserServiceImpl;
+import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
+import com.krypton.snetwork.service.user.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -118,6 +118,8 @@ public class AuthController{
      * @param json		String with keys and values
      */
     private HashMap<String, String> stringToHashMap(String json) {
+        // hash map parsed from string
+        HashMap<String, String> parsedHashMap = new HashMap<>();
         // remove curly brackets
         json = json.substring(1, json.length()-1);
         // split string to create key/value pairs
@@ -126,14 +128,12 @@ public class AuthController{
         for (String pair : keyValuePairs) {
             // split pair in key and value
             String[] entry = pair.split(":");
-            // put key and value to parsed hash map
-            return new HashMap<>(){{
-                    put(
-                        entry[0].replace('"',' ').trim(),
-                        entry[1].replace('"',' ').trim()
-                    );
-                }};
+            // put key and value to parsed hashmap
+            parsedHashMap.put(
+                    entry[0].replace('"',' ').trim(),
+                    entry[1].replace('"',' ').trim()
+            );
         }
-        return null;
+        return parsedHashMap;
     }
 }

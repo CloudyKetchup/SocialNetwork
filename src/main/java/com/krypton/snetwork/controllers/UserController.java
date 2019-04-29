@@ -1,10 +1,12 @@
 package com.krypton.snetwork.controllers;
 
-import com.krypton.snetwork.model.User;
+import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.service.user.UserServiceImpl;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 
