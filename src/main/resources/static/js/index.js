@@ -55,7 +55,7 @@ function sortJsonObjects(objects) {
   for (let i = 0; i < objects.length; i++) {
     for(let j = 0; j < objects.length; j++) {
       if (objects[i]['id'] > objects[j]['id']) {
-        let temp   = objects[i]
+        const temp = objects[i]
         objects[i] = objects[j]
         objects[j] = temp
       }
@@ -196,7 +196,7 @@ function createGroup() {
     }
   })
 }
-// get group data like posts,images,members...
+// get group data like posts,images,followers...
 function getGroupData(group) {
   $.ajax({
     type : 'POST',
@@ -273,11 +273,12 @@ function renderGroups(group) {
       .click(() => {
         $('.group-container').remove()
         getGroupData(group)
-        // render group photo,posts and members
+        console.log(groupData)
+        // render group photo,posts and followers
         renderGroupContainer()
-        // load members profile photo
-        for(i in groupData['members']) {
-          membersPhoto(groupData['members'][i])
+        // load followers profile photo
+        for(i in groupData['followers']) {
+          followersPhoto(groupData['followers'][i])
         }
       }
     )
@@ -302,7 +303,7 @@ function renderGroupContainer() {
             // container with new post input/submit
             newPostContainer(),
             $('<p/>')
-              .html(groupData['members'].length + '  Followers'),
+              .html(groupData['followers'].length + '  Followers'),
             // container storing group images
             groupContainerImage(),
           ),
@@ -310,25 +311,25 @@ function renderGroupContainer() {
           .attr('class','group-content')
           .append(
             // div containing posts
-            groupPostsContainer(groupData['posts']),
-            // container stores group members list
-            groupMembers(groupData['members'])
+            postsContainer(groupData['posts']),
+            // container stores group followers list
+            groupfollowers(groupData['followers'])
           )
       )
   )
 }
-// get group members profile photos
-function membersPhoto(member) {
+// get group followers profile photos
+function followersPhoto(follower) {
   $.ajax({
     type : 'POST',
     url : 'http://localhost:8080/user_image',
     contentType : 'application/json; charset=utf-8',
     data : JSON.stringify({
-      'email' : member['email']
+      'email' : follower['email']
     }),
     success : (result) => {
-      // set member image
-      $('#member' + member['id'] + 'image')
+      // set follower image
+      $('#follower' + follower['id'] + 'image')
           .attr('src','data:image/jpg;base64,' + result)
     }
   })
@@ -355,13 +356,15 @@ function groupContainerClose() {
     .attr('id','close')
     .append('<i/>')
       .attr('class','fas fa-chevron-left')
-      .click(() =>
-        // remove group container from main container
-        $('.group-container').remove()
-  )
+      .click(() => {
+          groupData = undefined
+          // remove group container from main container
+          $('.group-container').remove()
+        }
+      )
 }
 // send new post to group via request
-function newPost() {
+function newPost(postType) {
   const contentInput = $('.new-post-input')
   $.ajax({
     type : 'POST',
@@ -371,11 +374,13 @@ function newPost() {
       // post text
       'content' : contentInput.val(),
       // post author
-      'author' : getUser()['email'],
+      'author' : getUser()['id'],
       // time when post is created
       'time' : new Date().getTime(),
       // id of group where to send post
-      'group_id': groupData['id']
+      'group': groupData['id'],
+      // group or user post
+      'post_type' : postType
     }),
     success : (result) => {
       contentInput.val('')
@@ -402,24 +407,94 @@ function newPostContainer() {
           $('<i/>')
             .attr('class','fa fa-paper-plane')
         )
-        .click(() => newPost())
+        .click(() => {
+          if (groupData !== undefined) {
+            newPost("Group")
+          }else {
+            newPost("User")
+          }
+        })
     ])
 }
-// group post container
-function groupPostsContainer(posts) {
-  // group posts container
-  const groupPosts = $('<div/>')
-    .attr('class','group-posts')
+// group image in container in top right corner
+function groupContainerImage() {
+  // top right container that stores group image
+  return imageContainer = $('<div/>')
+    .attr('class','group-image-container')
+    // container elements
+    .append(
+      // group image
+      $('<img/>')
+        .attr('class','group-image'),
+      $('<span/>')
+        .html(groupData['name'])
+    )
+}
+function groupFollow() {
+  // group follow button text
+  let followText = 'Follow'
+  // user email from cookie
+  const email    = getUser()['email']
+  // check if user is following group and change follow button text
+  for (i in groupData['followers']) {
+    // check if user is in group followers list
+    if (groupData['followers'][i]['email'] === email){
+      // change follow button text
+      followText = 'Following'
+      break
+    }
+  }
+  // group follow button
+  return $('<button/>')
+    .attr('class','group-follow')
+    .html(followText)
+}
+// container with group followers at bottom left
+function groupfollowers(followers) {
+  const followersContainer = $('<div/>')
+    .attr('class','group-followers-container')
+    .append(
+      $('<div/>')
+        .attr('class','group-followers')
+    )
+  // add all followers from group to container
+  for (i in followers) {
+    followersContainer
+      .find('.group-followers')
+      .append(groupfollower(followers[i]))
+  }
+  return followersContainer
+}
+function groupfollower(follower) {
+  return $('<div>')
+    .attr('class','group-follower')
+    .append([
+      $('<div/>')
+        .attr('class','group-follower-image')
+        .append(
+          $('<img/>')
+            .attr('id','follower' + follower['id'] + 'image')
+        ),
+      $('<span/>')
+        .attr('class','group-follower-name')
+        .html(follower['username'])
+    ])
+}
+// post container
+function postsContainer(posts) {
+  // posts container
+  const postsDiv = $('<div/>')
+    .attr('class','posts')
   // sort posts
   const sortedPosts = sortJsonObjects(posts)
   // append to container all posts
   for (i in sortedPosts) {
     // append post div
-    groupPosts.append(groupPost(sortedPosts[i]))
+    postsDiv.append(post(sortedPosts[i]))
   }
-  return groupPosts
+  return postsDiv
 }
-function groupPost(post) {
+function post(post) {
   // post div
   return $('<div/>')
     .attr('class','group-post')
@@ -500,26 +575,26 @@ function likeButton(post) {
       // change button color to red
       .css('color','#F44256')
       // on tap will remove user like
-      .click(() => sendLike(post, 'remove_like'))
+      .click(() => sendGroupLike(post,'remove_like',groupData['id']))
   }else {
     likeButton
       // change color to grey
       .css('color','grey')
       // on tap will add user like
-      .click(() => sendLike(post, 'add_like'))
+      .click(() => sendGroupLike(post,'add_like',groupData['id']))
   }
   return likeButton
 }
 // send group post like with action add/remove
-function sendLike(post,action) {
+function sendGroupLike(post,action,entity_id) {
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
-    url : 'http://localhost:8080/' + action,
+    url : 'http://localhost:8080/group/' + action,
     data : JSON.stringify({
-      'group_id' : groupData['id'],
-      'post_id'  : post['id'],
-      'author_id'  : getUser()['id']
+      'entity_id' : entity_id,
+      'post_id'   : post['id'],
+      'author_id' : getUser()['id']
     }),
     success: (result) => {
       updatePosts()
@@ -639,10 +714,9 @@ function sendComment(post) {
     contentType : 'application/json; charset=utf-8',
     url : 'http://localhost:8080/new_comment',
     data : JSON.stringify({
-      'group_id' : groupData['id'],
       'post_id'  : post['id'],
       'content'  : $('.comment-input').val(),
-      'author'  : getUser()['email']
+      'author'   : getUser()['email']
     }),
     success: (result) => {
       updatePosts(post['id'])
@@ -650,74 +724,10 @@ function sendComment(post) {
     }
   })
 }
-// group image in container in top right corner
-function groupContainerImage() {
-  // top right container that stores group image
-  return imageContainer = $('<div/>')
-    .attr('class','group-image-container')
-    // container elements
-    .append(
-      // group image
-      $('<img/>')
-        .attr('class','group-image'),
-      $('<span/>')
-        .html(groupData['name'])
-    )
-}
-function groupFollow() {
-  // group follow button text
-  let followText = 'Follow'
-  // user email from cookie
-  const email    = getUser()['email']
-  // check if user is following group and change follow button text
-  for (i in groupData['members']) {
-    // check if user is in group members list
-    if (groupData['members'][i]['email'] === email){
-      // change follow button text
-      followText = 'Following'
-      break
-    }
-  }
-  // group follow button
-  return $('<button/>')
-    .attr('class','group-follow')
-    .html(followText)
-}
-// container with group members at bottom left
-function groupMembers(members) {
-  const membersContainer = $('<div/>')
-    .attr('class','group-members-container')
-    .append(
-      $('<div/>')
-        .attr('class','group-members')
-    )
-  // add all members from group to container
-  for (i in members) {
-    membersContainer
-      .find('.group-members')
-      .append(groupMember(members[i]))
-  }
-  return membersContainer
-}
-function groupMember(member) {
-  return $('<div>')
-    .attr('class','group-member')
-    .append([
-      $('<div/>')
-        .attr('class','group-member-image')
-        .append(
-          $('<img/>')
-            .attr('id','member' + member['id'] + 'image')
-        ),
-      $('<span/>')
-        .attr('class','group-member-name')
-        .html(member['username'])
-    ])
-}
 // update posts in group container
 function updatePosts() {
   // remove posts
-  $('.group-posts').empty()
+  $('.posts').empty()
   // update group data
   getGroupData(groupData)
   // sort posts
@@ -725,7 +735,7 @@ function updatePosts() {
   // append to container all posts
   for (i in sortedPosts) {
     // append post div
-    $('.group-posts').append(groupPost(sortedPosts[i]))
+    $('.posts').append(post(sortedPosts[i]))
   }
 }
 // update post comments

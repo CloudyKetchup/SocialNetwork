@@ -1,10 +1,8 @@
 package com.krypton.snetwork.service.user;
 
-import com.krypton.snetwork.model.group.Group;
-import com.krypton.snetwork.model.User;
 import com.krypton.snetwork.model.Image;
-
-import java.util.HashMap;
+import com.krypton.snetwork.model.group.Group;
+import com.krypton.snetwork.model.user.User;
 
 public interface UserService {
 
@@ -26,6 +24,12 @@ public interface UserService {
 	 * @return 			User entity
 	 */
 	public User getUser(String email);
+	/**
+	 * get user entity object from database by id
+	 * @param  id 		user id
+	 * @return 			User entity
+	 */
+	public User getUser(Long id);
 	/**
 	 * save new user account to database
 	 * @param username

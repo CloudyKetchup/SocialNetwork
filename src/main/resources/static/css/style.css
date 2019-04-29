@@ -279,7 +279,7 @@ input {
     height: 210px;
     object-fit: cover;
 }
-.group-members-container {
+.group-followers-container {
 	display: inline-block;
     background-color: rgb(30, 30, 30);
     border-top-left-radius: 5px;
@@ -293,11 +293,11 @@ input {
     width: 230px;
     position: absolute;
 }
-.group-members {
+.group-followers {
 	height: 100%;
 	width: 100%;
 }
-.group-member {
+.group-follower {
 	background-color: transparent;
 	height: 40px;
 	width: 100%;
@@ -306,22 +306,22 @@ input {
 	margin-top: 5px;
 	transition: 0.2s;
 }
-.group-member:hover {
+.group-follower:hover {
 	background-color: #232323;
 	cursor: pointer;
 }
-.group-member-image {
+.group-follower-image {
 	height: 40px;
 	width: 40px;
 	float: left;
 }
-.group-member-image > img {
+.group-follower-image > img {
 	width: 35px;
 	height: 35px;
 	border-radius: 100px;
 	object-fit: cover;
 }
-.group-member-name {
+.group-follower-name {
 	float: left;
 	color: white;
     margin-left: 20px;
@@ -348,7 +348,7 @@ input {
 	margin-right: 5px;
     font-size: 15px;
 }
-.new-post,.group-posts {
+.new-post,.posts {
     padding: 10px;
     width: 70%;
 }

@@ -1,15 +1,19 @@
-package com.krypton.snetwork.model;
+package com.krypton.snetwork.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.common.EntityType;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.group.Post;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
-@Getter@Setter
+@Getter
+@Setter
 @Entity
 @Table(name = "Users")
 public class User {
@@ -27,12 +31,16 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Transient
-    public static Boolean loggedIn = false;
-    
+    @Column
+    private EntityType type;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "image_id")
     private Image profilePhoto;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "background_id")
+    private Image backgroundPhoto;
 
     @ManyToMany
     @JoinTable(
@@ -40,13 +48,11 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "group_id"))
     @JsonIgnore
-    Set<Group> groups = new HashSet<>();
+    private Set<Group> groups = new HashSet<>();
 
     @ManyToMany
-    @JsonIgnore
-    private Set<User> friends = new HashSet<>();
+    private Set<User> followers = new HashSet<>();
 
-    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL)
     private Set<Post> posts = new HashSet<>();
 
@@ -56,11 +62,14 @@ public class User {
         String username,
         String email,
         String password,
-        Image profilePhoto
+        Image profilePhoto,
+        Image backgroundPhoto
     ){
-        this.username     = username;
-        this.email        = email;
-        this.password     = password;
-        this.profilePhoto = profilePhoto;
+        this.username        = username;
+        this.email           = email;
+        this.password        = password;
+        this.profilePhoto    = profilePhoto;
+        this.backgroundPhoto = backgroundPhoto;
+        this.type            = EntityType.USER;
     }
 }

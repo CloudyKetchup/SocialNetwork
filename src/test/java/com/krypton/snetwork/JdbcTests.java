@@ -1,7 +1,7 @@
 package com.krypton.snetwork;
 
-import com.krypton.snetwork.model.Group;
-import com.krypton.snetwork.model.User;
+import com.krypton.snetwork.model.group.Group;
+import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.repository.GroupRepository;
 import com.krypton.snetwork.repository.UserRepository;
 import org.junit.Test;
