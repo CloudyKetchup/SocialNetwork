@@ -1,14 +1,13 @@
 * {
 	box-sizing: border-box;
-	font-family: Rubik;
+	font-family: Rubik, serif;
 }
 body,html {
 	margin: 0;
 	padding: 0;
 	width: 100%;
 	height: 100vh;
-	background: url("../images/index.jpg");
-	background-position: center;
+	background: url("../images/index.jpg") center;
 	background-size: cover;
 	overflow: hidden;
 }
@@ -120,12 +119,13 @@ input {
     margin-right: auto;
     left: 0;
     right: 0;
-    min-height: 95%;
+    height: 95%;
     width: 65%;
     border-radius: 5px;
     position: absolute;
 }
 .feed-content {
+	min-height: 92%;
 	margin-top: 50px;
 	background-color: #d6d2d2;
 	border-radius: 5px;
@@ -356,6 +356,9 @@ input {
     padding: 10px;
     width: 70%;
 }
+.posts {
+	min-height: 95%;
+}
 .new-post {
 	height: 40px;
     width: 70%;
@@ -365,26 +368,39 @@ input {
     margin-bottom: 15px;
     position: absolute;
 }
-.new-post-submit,.new-post-input {
-	height: 100%;
-}
 .new-post-submit {
 	background-color: #f44242;
     width: 10%;
+    height: 99%;
     color: white;
     font-size: 15px;
     border-top-left-radius: 0px;
     border-bottom-left-radius: 0px;
 }
 .new-post-input {
-	width: 90%;
-	background-color: #101010;
+	height: 100%;
+	width: 80%;
+    background-color: #101010;
     border-top-right-radius: 0px;
     border-bottom-right-radius: 0px;
     transition: 0.5s;
 }
 .new-post-input:focus {
 	background-color: #080808;
+}
+.choose-post-picture {
+	display: none;
+}
+.choose-post-picture-icon {
+    background-color: #101010;
+    color: white;
+    width: 10%;
+    height: 100%;
+    text-align: center;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+    line-height: 25px;
 }
 .like-button {
 	left: 45px;

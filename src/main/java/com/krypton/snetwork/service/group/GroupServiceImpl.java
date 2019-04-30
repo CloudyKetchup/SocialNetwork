@@ -36,7 +36,6 @@ public class GroupServiceImpl implements GroupService {
 		Image background = imageService.getBackground(name);
 		// create group entity and return as object
 		Group group 	 = createGroup(name, admin, image, background);
-		System.out.println(group);
 		// save new group entity to admin
 		saveGroupMember(group, admin);
 		// save admin entity to group

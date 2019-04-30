@@ -93,7 +93,7 @@ public class ImageServiceImpl implements ImageService {
 	}
 	@Override
 	public byte[] resizeImage(File image, int width, int height) throws IOException{
-		// resize bytes to given width and height
+		// resize image to given width and height
 		BufferedImage resizedImage = Thumbnails.of(image).size(width,height).asBufferedImage();
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

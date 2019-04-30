@@ -63,6 +63,22 @@ function newsFeed() {
     .append(
       $('<div/>')
         .attr('class','feed')
+        .append(
+          // new post input and submit
+          newPostContainer("User",getUser()['id'])
+            .css({
+              'top': '0px',
+              'width': '100%',
+              'margin-left': '0'
+            }),
+          $('<div/>')
+            .attr('class','feed-content')
+            .append(// posts container
+              $('<div/>')
+                .attr('class','posts')
+                .css('width','100%')
+            )
+        )
     )
   getFeedPosts()
 }
@@ -77,28 +93,14 @@ function getFeedPosts() {
     }),
     success : (result) => {
       feedPosts = $.extend(true, {}, result)
-      renderFeed(result)
+      renderFeedPosts(result)
     }
   })
 }
 // render all posts in feed
-function renderFeed(posts) {
-  $('.feed').empty()
-  $('.feed')
-    .append(
-      // new post input and submit
-      newPostContainer("User",getUser()['id'])
-        .css({
-          'top': '0px',
-          'width': '100%',
-          'margin-left': '0'
-        }),
-      $('<div/>')
-        .attr('class','feed-content')
-        // feed posts
-        .append(feedPostsContainer(posts))
-
-    )
+function renderFeedPosts(posts) {
+  $('.posts').empty()
+  appendFeedPosts(posts)
 }
 /* json from ajax give objects in random
   so we sort them by id */
@@ -417,7 +419,7 @@ function groupContainerClose() {
         }
       )
 }
-// group new post container
+// new post container
 function newPostContainer(postType,parent_id) {
   return $('<div/>')
     .attr('class','new-post')
@@ -429,6 +431,22 @@ function newPostContainer(postType,parent_id) {
           'class': 'new-post-input',
           'placeholder': 'Post to wall'
         }),
+      // choose picture for post button
+      $('<input/>')
+        .attr({
+          'class': 'choose-post-picture',
+          'type' : 'file'
+        }),
+      // icon for choose post picture
+      $('<label/>')
+        .attr({
+          'for': 'choose-post-picture',
+          'class': 'choose-post-picture-icon'
+        })
+        // image icon on label
+        .append($('<i/>').attr('class','fas fa-image'))
+        // on click simulate click on choose post picture input>
+        .click(() => $('.choose-post-picture').click()),
       // post submit button
       $('<button/>')
         .attr('class','new-post-submit')
@@ -453,24 +471,32 @@ function sendNewPost(postType,parent_id) {
       // time when post is created
       'time' : new Date().getTime(),
       // id of entity where to send post group or user
-      'for': parent_id,
+      'for' : parent_id,
       // group or user post
       'post_type' : postType
     }),
     success : (result) => {
-      // empty post input
-      $('.new-post-input').val('')
-      // check if post was send to user or group
-      if (result === 'user post added') {
-        // update feed posts
-        getFeedPosts()
+      // check if post have picture
+      if ($('.choose-post-picture').prop('files')[0] !== undefined) {
+        sendPostPicture(result)
       }else {
-        // update group data
-        getGroupData(groupData)
-        renderUpdatedPosts(groupData['posts'])
+        // empty post input
+        $('.new-post-input').val('')
+        // check if post was send to user or group
+        if (result['type'] === "User") {
+          // update feed posts
+          getFeedPosts()
+        }else {
+          // update group data
+          getGroupData(groupData)
+          renderUpdatedPosts(groupData['posts'])
+        }
       }
     }
   })
+}
+function sendPostPicture(post) {
+
 }
 // group image in container in top right corner
 function groupContainerImage() {
@@ -599,21 +625,16 @@ function getPostAuthor(post_id) {
   })
   return author
 }
-// post container
-function feedPostsContainer(posts) {
-  // posts container
-  const postsDiv = $('<div/>')
-    .attr('class','posts')
-    .css('width','100%')
+// add all posts to posts container
+function appendFeedPosts(posts) {
   // sort posts
   const sortedPosts = sortJsonObjects(posts)
   // append to container all posts
   for (i in sortedPosts) {
-    // append post div
-    postsDiv.append(
+    // append posts
+    $('.posts').append(
       feedPostDiv(sortedPosts[i]))
   }
-  return postsDiv
 }
 function feedPostDiv(post) {
   // post div
