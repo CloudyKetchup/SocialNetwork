@@ -1,12 +1,22 @@
 package com.krypton.snetwork.service.post;
 
-import com.krypton.snetwork.model.group.*;
+import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.common.EntityType;
+import com.krypton.snetwork.model.group.Comment;
+import com.krypton.snetwork.model.group.Group;
+import com.krypton.snetwork.model.group.Post;
 import com.krypton.snetwork.model.user.User;
-import com.krypton.snetwork.repository.*;
+import com.krypton.snetwork.repository.GroupRepository;
+import com.krypton.snetwork.repository.PostRepository;
+import com.krypton.snetwork.repository.UserRepository;
 import com.krypton.snetwork.service.group.GroupService;
+import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.HashMap;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -19,6 +29,9 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ImageServiceImpl imageService;
 
     @Autowired
     private GroupRepository groupRepository;
@@ -35,7 +48,8 @@ public class PostServiceImpl implements PostService {
                 new Post(
                         content,                        // post text
                         userService.getUser(author),    // post author
-                        time                            // time when post was created
+                        time,                           // time when post was created
+                        EntityType.GROUP
                 )
         );
         // update group with new post
@@ -50,7 +64,8 @@ public class PostServiceImpl implements PostService {
                 new Post(
                         content,    // post text
                         user,       // post author
-                        time        // time when post was created
+                        time,       // time when post was created
+                        EntityType.USER
                 )
         );
         // update user with new post
@@ -63,10 +78,26 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public void addPostPicture(MultipartFile postPhoto, HashMap<String, String> postData) {
+        // insert picture to database
+        imageService.insertImage(postData.get("name"),postPhoto);
+        // picture for post inserted in database
+        Image insertedPicture = imageService.getImage(postData.get("name"));
+        // add picture to post
+        addPicture(Long.valueOf(postData.get("id")),insertedPicture);
+    }
+
+    @Override
+    public void addPicture(Long id, Image photo) {
+        Post post = getPost(id);
+        post.setPicture(photo);
+        postRepository.save(post);
+    }
+
+    @Override
     public void addLike(Long id, Long authorId) {
         Post post = getPost(id);
         post.getLikes().add(authorId);
-        // update post
         postRepository.save(post);
     }
 
@@ -74,7 +105,6 @@ public class PostServiceImpl implements PostService {
     public void removeLike(Long id, Long authorId) {
         Post post = getPost(id);
         post.getLikes().remove(authorId);
-        // update post
         postRepository.save(post);
     }
 
@@ -82,7 +112,6 @@ public class PostServiceImpl implements PostService {
     public void addComment(Long id, Comment comment) {
         Post post = getPost(id);
         post.getComments().add(comment);
-        // update post
         postRepository.save(post);
     }
 }

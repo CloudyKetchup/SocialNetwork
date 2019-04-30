@@ -1,6 +1,8 @@
 package com.krypton.snetwork.model.group;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.common.EntityType;
 import com.krypton.snetwork.model.user.User;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,11 +37,18 @@ public class Post {
     @JsonIgnore
     private User author;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    private Image picture;
+
+    @Column
+    private String type;
+
     public Post() {}
 
-    public Post(String content,User author,Long time) {
+    public Post(String content,User author,Long time,EntityType type) {
         this.content = content;
         this.author  = author;
         this.time    = time;
+        this.type    = String.valueOf(type);
     }
 }
