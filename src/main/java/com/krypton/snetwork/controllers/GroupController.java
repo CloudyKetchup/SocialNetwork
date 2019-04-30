@@ -27,9 +27,9 @@ public class GroupController {
      * @return group parameters,profile bytes,posts and members
      */
     @PostMapping("/group_data")
-    public HashMap<String, Object> groupData(@RequestBody HashMap<String, String> request) {
+    public HashMap<String, Object> groupData(@RequestBody HashMap<String, Long> request) {
         return new HashMap<>(){{
-            put("group",groupService.getGroup(Long.valueOf(request.get("id"))));
+            put("group",groupService.getGroup(request.get("id")));
         }};
     }
     /**
@@ -38,9 +38,9 @@ public class GroupController {
      * @return group image in base64 format
      */
     @PostMapping("/group_image")
-    public byte[] groupImage(@RequestBody HashMap<String, String> request) {
+    public byte[] groupImage(@RequestBody HashMap<String, Long> request) {
         // load group image from database
-        byte[] image = groupService.getGroup(Long.valueOf(request.get("id")))
+        byte[] image = groupService.getGroup(request.get("id"))
                 .getProfilePhoto().getBytes();
         return Base64.encodeBase64(image);
     }
@@ -50,9 +50,9 @@ public class GroupController {
      * @return group background in base64 format
      */
     @PostMapping("/group_background")
-    public byte[] groupBackground(@RequestBody HashMap<String, String> request) {
+    public byte[] groupBackground(@RequestBody HashMap<String, Long> request) {
         // load group background from database
-        byte[] background = groupService.getGroup(Long.valueOf(request.get("id")))
+        byte[] background = groupService.getGroup(request.get("id"))
                 .getBackgroundPhoto().getBytes();
         return Base64.encodeBase64(background);
     }

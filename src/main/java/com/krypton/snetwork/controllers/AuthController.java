@@ -1,6 +1,7 @@
 package com.krypton.snetwork.controllers;
 
 import com.krypton.snetwork.model.user.User;
+import com.krypton.snetwork.service.common.Tools;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class AuthController{
 
     @Autowired
     private ImageServiceImpl imageService;
+
+    @Autowired
+    private Tools tools;
 
     /**
      * redirect to registration page
@@ -86,7 +90,7 @@ public class AuthController{
             @RequestParam("data")  String data
     ) {
         // parsed json from request
-        HashMap<String, String> parsedData = stringToHashMap(data);
+        HashMap<String, String> parsedData = tools.stringToHashMap(data);
         // username from request
         String username = parsedData.get("username");
         // email from request
@@ -112,28 +116,5 @@ public class AuthController{
                 put("response","registered");
             }};
         }
-    }
-    /**
-     * parses json from string to hash map
-     * @param json		String with keys and values
-     */
-    private HashMap<String, String> stringToHashMap(String json) {
-        // hash map parsed from string
-        HashMap<String, String> parsedHashMap = new HashMap<>();
-        // remove curly brackets
-        json = json.substring(1, json.length()-1);
-        // split string to create key/value pairs
-        String[] keyValuePairs = json.split(",");
-        // iterate pairs
-        for (String pair : keyValuePairs) {
-            // split pair in key and value
-            String[] entry = pair.split(":");
-            // put key and value to parsed hashmap
-            parsedHashMap.put(
-                    entry[0].replace('"',' ').trim(),
-                    entry[1].replace('"',' ').trim()
-            );
-        }
-        return parsedHashMap;
     }
 }
