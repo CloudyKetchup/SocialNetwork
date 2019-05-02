@@ -54,6 +54,7 @@ public class User {
     private Set<User> followers = new HashSet<>();
 
     @OneToMany(cascade = CascadeType.ALL)
+    @JsonIgnore
     private Set<Post> posts = new HashSet<>();
 
     public User() {}
@@ -71,5 +72,19 @@ public class User {
         this.profilePhoto    = profilePhoto;
         this.backgroundPhoto = backgroundPhoto;
         this.type            = EntityType.USER;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id="                + id +
+                ", username='"       + username + '\'' +
+                ", email='"          + email    + '\'' +
+                ", password='"       + password + '\'' +
+                ", type="            + type +
+                ", profilePhoto="    + profilePhoto +
+                ", backgroundPhoto=" + backgroundPhoto +
+                ", followers="       + followers +
+                '}';
     }
 }
