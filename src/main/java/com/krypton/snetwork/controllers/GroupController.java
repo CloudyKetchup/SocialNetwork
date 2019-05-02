@@ -2,12 +2,10 @@ package com.krypton.snetwork.controllers;
 
 import com.krypton.snetwork.service.group.GroupServiceImpl;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
@@ -33,28 +31,29 @@ public class GroupController {
         }};
     }
     /**
-     * get group image in base64 byte format
-     * @param request 	group id
-     * @return group image in base64 format
+     * get group image,will come on client side like resource
+     * @param id 	    group id
+     * @return group image
      */
-    @PostMapping("/group_image")
-    public byte[] groupImage(@RequestBody HashMap<String, Long> request) {
+    @GetMapping("/group/image/{id:.+}")
+    public ResponseEntity<byte[]> getGroupImage(@PathVariable("id") Long id) {
+        System.out.println(id);
         // load group image from database
-        byte[] image = groupService.getGroup(request.get("id"))
-                .getProfilePhoto().getBytes();
-        return Base64.encodeBase64(image);
+        byte[] image = imageService.getImage(id).getBytes();
+        // return as resource
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
     }
     /**
      * get group background in base64 byte format
-     * @param request 	group id
+     * @param id 	    group id
      * @return group background in base64 format
      */
-    @PostMapping("/group_background")
-    public byte[] groupBackground(@RequestBody HashMap<String, Long> request) {
+    @GetMapping("/group/background/{id:.+}")
+    public ResponseEntity<byte[]> getGroupBackground(@PathVariable("id") Long id) {
         // load group background from database
-        byte[] background = groupService.getGroup(request.get("id"))
-                .getBackgroundPhoto().getBytes();
-        return Base64.encodeBase64(background);
+        byte[] image = imageService.getImage(id).getBytes();
+        // return as resource
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
     }
     /**
      * post request for creating new group
@@ -65,17 +64,15 @@ public class GroupController {
      * @return message "group already exist" or "group created"
      */
     @PostMapping("/new_group")
-    public HashMap<String, String> newGroup(
-            @RequestParam("image") MultipartFile image,
+    public String newGroup(
+            @RequestParam("image")      MultipartFile image,
             @RequestParam("background") MultipartFile background,
-            @RequestParam("name") String name,
-            @RequestParam("admin") String admin
+            @RequestParam("name")       String name,
+            @RequestParam("admin")      String admin
     ) {
         // check if room with that name exist
         if (groupService.groupExist(name)) {
-            return new HashMap<>(){{
-                put("response","group already exist");
-            }};
+            return "group already exist";
         }else {
             // insert group photo to database
             imageService.insertImage(name, image);
@@ -83,9 +80,7 @@ public class GroupController {
             imageService.insertBackground(name, background);
             // insert group to database
             groupService.insertGroup(name, admin);
-            return new HashMap<>(){{
-                put("response","group created");
-            }};
+            return "group created";
         }
     }
 }
