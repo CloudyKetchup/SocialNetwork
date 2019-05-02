@@ -1,6 +1,8 @@
 * {
 	box-sizing: border-box;
 	font-family: Rubik, serif;
+	will-change: transform;
+
 }
 body,html {
 	margin: 0;
@@ -83,7 +85,7 @@ input {
 	overflow-y: scroll;
 	position: relative;
 }
-.friends-list,.groups-list {
+.right-panel,.left-panel {
 	height: 95%;
 	width: 15%;
 	min-width: 150px;
@@ -91,27 +93,19 @@ input {
 	background-color: #d6d2d2;
 	color: #161616;
 	text-align: center;
-	padding-top: 20px;
 	padding: 20px;
-	padding-bottom: 10px;
 	position: absolute;
 }
-.friends-list,.groups-list > span {
-    left: 0;
-    right: 0;
-	z-index: 0;
-    position: absolute;
+.right-panel {
+	right: 10px;
+}
+.left-panel {
+	left: 10px;
 }
 .friends-box,.groups-box {
+	margin-top: 10px;
 	width: 100%;
 	height: 90%;
-}
-.groups-box {
-	margin-top: 10px;
-	float: right;
-}
-.friends-box {
-	float: left;
 }
 .feed {
 	display: block;
@@ -240,17 +234,6 @@ input {
     margin-left: -1%;
     text-align: right;
 }
-.post {
-	background-color: #a7a7a757;
-	color: #161616;
-	display: inline-block;
-	padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    min-height: 100px;
-	width: 100%;
-	text-align: start;
-}
 .group-follow {
 	background-color: #f44242;
     margin-top: 170px;
@@ -278,24 +261,21 @@ input {
 	line-height: 25px;
 }
 .group-image {
-	border-radius: 5px;
 	width: 210px;
     height: 210px;
-    object-fit: cover;
+	object-fit: cover;
+	border-radius: 5px;
 }
 .group-followers-container {
-	display: inline-block;
-    background-color: rgb(30, 30, 30);
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
+	background-color: rgb(30, 30, 30);
+    border-radius: 5px;
     text-align: center;
-    margin-top: 10px;
-    right: -3px;
+    margin-right: 5px;
+    height: 95%;
+    width: 15%;
+    min-width: 150px;
+    float: right;
     padding: 5px;
-    min-height: 290px;
-    max-height: 500px;
-    width: 230px;
-    position: absolute;
 }
 .group-followers {
 	height: 100%;
@@ -330,13 +310,48 @@ input {
 	color: white;
     margin-left: 20px;
 }
-.post-header {
-	display: inline-block;
+.post {
+	background-color: #a7a7a757;
+	color: #161616;
+	padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    min-height: 100px;
 	width: 100%;
+	text-align: start;
+	animation-name: fadein;
+    animation-duration: 0.2s;
+}
+.post-header {
+	background-color: #161616;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: white;
+    width: 103%;
+    padding: 10px;
+    margin-top: -10px;
+    margin-left: -1.5%;
+}
+.post-picture {
+	border-radius: 5px;
+    width: 62%;
 }
 .post-content-box {
-    width: 70%;
+    width: 63%;
     overflow-wrap: break-word;
+}
+.post-content-box > p {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+.post-content-box > img {
+	border-radius: 5px;
+}
+.post-text {
+	margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    word-break: break-all;
 }
 .post-author-image {
 	float: left;
@@ -348,6 +363,7 @@ input {
 	object-fit: cover;
 }
 .post-time {
+	line-height: 30px;
     float: right;
 	margin-right: 5px;
     font-size: 15px;
@@ -358,6 +374,7 @@ input {
 }
 .posts {
 	min-height: 95%;
+	width: 100%;
 }
 .new-post {
 	height: 40px;
@@ -409,37 +426,23 @@ input {
 }
 .comments-container {
 	background-color: black;
-	color: white;
-	min-height: 300px;
-	max-height: 500px;
-    width: 40%;
+    color: white;
+    min-width: 35%;
+    margin-top: -300px;
+    margin-right: 5px;
+    float: right;
     border-radius: 5px;
-	z-index: 1;
-	position: fixed;
-	overflow-y: hidden;
-	left: 50%;
-	top: 50%;
-	box-shadow: 0px 0px 0px 500px rgba(0,0,0,0.4);
-	animation-name: fadein;
-	animation-duration: 0.2s;
-	transform: translate(-50%, -50%);
+    overflow-y: hidden;
+}
+.comments-container > p {
+	text-align: center;
 }
 .comments-paragraph {
-	left: 45%;
-	top: -5px;
-	position :absolute;
-}
-.comments-back-icon {
-	margin: 10px;
-	color: #F44256;
-	cursor: pointer;
-}
-.comments-footer {
-    bottom: 0;
-    height: 40px;
-    width: 100%;
+	margin-top: 10px;
+    margin-bottom: 10px;
 }
 .comment {
+	text-align: start;
 	margin: 10px;
     border-radius: 5px;
 	background-color: #323232;
@@ -458,7 +461,6 @@ input {
     bottom: 0;
     left: 0;
     border-radius: 0;
-    position: absolute;
 }
 .comment-submit {
     background-color: #f44242;
@@ -468,7 +470,6 @@ input {
     width: 20%;
     height: 40px;
     border-radius: 0px;
-	position: absolute;
 }
 @keyframes animatetop {
   	from {top: -300px; opacity: 0}

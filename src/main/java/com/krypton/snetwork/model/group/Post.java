@@ -51,4 +51,17 @@ public class Post {
         this.time    = time;
         this.type    = String.valueOf(type);
     }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id="           + id +
+                ", time="       + time +
+                ", content='"   + content + '\'' +
+                ", likes="      + likes +
+                ", comments="   + comments +
+                ", picture="    + picture +
+                ", type='"      + type + '\'' +
+                '}';
+    }
 }

@@ -45,28 +45,25 @@ public class ImageServiceImpl implements ImageService {
 
 	@Override
 	public Image createImage(String name, MultipartFile image) throws IOException {
-		byte[] resizedImage = resizeImage(multipartToFile(image),500,500);
+		// resize image for faster loading
+		byte[] newImage = resizeImage(multipartToFile(image));
 		// image entity
 		return new Image(
 			name + "-photo",
 			image.getContentType(),
-			resizedImage
+			newImage
 		);
-	}
-	
-	@Override
-	public Image getImage(String name) {
-		return imageRepository.findByName(name + "-photo");
 	}
 
 	@Override
 	public Image createBackground(String name, MultipartFile background) throws IOException {
-		byte[] resizedBackground = resizeImage(multipartToFile(background),1280,720);
+		// resize background for faster loading
+		byte[] newBackground = resizeBackground(multipartToFile(background));
 		// background entity
 		return new Image(
 			name + "-background",
 			background.getContentType(),
-			resizedBackground
+			newBackground
 		); 
 	}
 
@@ -76,13 +73,42 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
+	public Image getImage(String name) {
+		return imageRepository.findByName(name + "-photo");
+	}
+	
+	@Override
 	public Image getImage(Long id) {
 		return imageRepository.findById(id).get();
 	}
 
+	@Override
+	public byte[] resizeImage(File image) throws IOException {
+		// resize image to given width and height
+		BufferedImage resizedImage = Thumbnails.of(image).size(500, 500).asBufferedImage();
+
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+		ImageIO.write(resizedImage, "jpg", outputStream);
+		// write bytes to byte array
+		return outputStream.toByteArray();
+	}
+
+	@Override
+	public byte[] resizeBackground(File image) throws IOException {
+		// resize image to given width and height
+		BufferedImage newImage = Thumbnails.of(image).size(1280,720).asBufferedImage();
+
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+		ImageIO.write(newImage, "jpg", outputStream);
+		// write bytes to byte array
+		return outputStream.toByteArray();
+	}
+
 	private File multipartToFile(MultipartFile file) {
 		File fileDir = new File(
-			System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename()
+				System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename()
 		);
 		try {
 			file.transferTo(fileDir);
@@ -90,16 +116,5 @@ public class ImageServiceImpl implements ImageService {
 			e.printStackTrace();
 		}
 		return fileDir;
-	}
-	@Override
-	public byte[] resizeImage(File image, int width, int height) throws IOException{
-		// resize image to given width and height
-		BufferedImage resizedImage = Thumbnails.of(image).size(width,height).asBufferedImage();
-
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-		ImageIO.write(resizedImage, "jpg", outputStream);
-		// write bytes to byte array
-		return outputStream.toByteArray();
 	}
 }

@@ -50,7 +50,7 @@ public class Group {
 			Image profilePhoto,
 			Image backgroundPhoto
 	) {
-		this.name  			 = name;
+		this.name 			 = name;
 		this.admin 			 = admin;
 		this.profilePhoto 	 = profilePhoto;
 		this.backgroundPhoto = backgroundPhoto;

@@ -28,12 +28,6 @@ public interface ImageService {
 	 * @return image entity
 	 */
 	Image createImage(String name, MultipartFile image) throws IOException;
-	/**
-	 * get image entity by name
-	 * @param name 		image name
-	 * @return image entity
-	 */
-	Image getImage(String name);
 	/** 
 	 * create background entity
 	 * @param name  		background entity name
@@ -50,6 +44,12 @@ public interface ImageService {
 	Image getBackground(String name);
 	/**
 	 * get image entity by name
+	 * @param name 		image name
+	 * @return image entity
+	 */
+	Image getImage(String name);
+	/**
+	 * get image entity by name
 	 * @param id 		image name
 	 * @return image entity
 	 */
@@ -57,10 +57,15 @@ public interface ImageService {
 	/**
 	 * resize image for lower file size
 	 * @param file 		image file for resize
-	 * @param width		image width
-	 * @param height 	image height
 	 * @throws IOException
 	 * @return byte array of image
 	 * */
-	public byte[] resizeImage(File file,int width, int height) throws IOException;
+	byte[] resizeImage(File file) throws IOException;
+	/**
+	 * resize background for lower file size
+	 * @param file 		image file for resize
+	 * @throws IOException
+	 * @return byte array of image
+	 * */
+	byte[] resizeBackground(File file) throws IOException;
 }

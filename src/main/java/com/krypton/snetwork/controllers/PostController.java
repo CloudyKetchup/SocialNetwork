@@ -1,20 +1,18 @@
 package com.krypton.snetwork.controllers;
 
 import com.krypton.snetwork.model.common.EntityType;
-import com.krypton.snetwork.model.group.Comment;
-import com.krypton.snetwork.model.group.Group;
-import com.krypton.snetwork.model.group.Post;
+import com.krypton.snetwork.model.group.*;
 import com.krypton.snetwork.model.user.User;
+import com.krypton.snetwork.repository.GroupRepository;
+import com.krypton.snetwork.repository.UserRepository;
 import com.krypton.snetwork.service.common.Tools;
 import com.krypton.snetwork.service.group.GroupServiceImpl;
 import com.krypton.snetwork.service.post.PostServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
@@ -35,6 +33,7 @@ public class PostController {
 
 	@Autowired
 	private Tools tools;
+
 	/**
 	 * get user feed posts
 	 * @param request 		user id
@@ -89,27 +88,26 @@ public class PostController {
 	}
 	/**
 	 * get post author entity
-	 * @param request 		post id
+	 * @param id 			post id
 	 * @return post author object from database
 	 */
-	@PostMapping("/post_author")
-	public HashMap<String, User> postAuthor(@RequestBody HashMap<String, Long> request) {
-	    return new HashMap<>(){{
-	        put("author",postService.getPost(request.get("post_id")).getAuthor());
-		}};
+	@GetMapping("/post_author/{id:.+}")
+	public User postAuthor(@PathVariable("id") Long id) {
+	    return postService.getPost(id).getAuthor();
 	}
 	/**
 	 * get post author photo
-	 * @param request 		author email
+	 * @param email 		author email
 	 * @return author photo in base64 format
 	 */
-	@PostMapping("/post_author_image")
-	public byte[] authorImage(@RequestBody HashMap<String, String> request) {
+	@GetMapping("/user/profile_picture/{email:.+}")
+	public ResponseEntity<byte[]> getAuthorImage(@PathVariable("email") String email) {
 		// author entity
-		User author  = userService.getUser(request.get("author"));
-		// author image
+		User author  = userService.getUser(email);
+
 		byte[] image = author.getProfilePhoto().getBytes();
-		return Base64.encodeBase64(image);
+
+		return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
 	}
 	/**
 	 * add picture to post
@@ -118,13 +116,24 @@ public class PostController {
 	 */
 	@PostMapping("/add_post_picture")
 	public void addPostPicture(
-		@RequestParam("post_photo") MultipartFile postPicture,
-		@RequestParam("post") 		String postData
+		@RequestParam("post_picture")	MultipartFile postPicture,
+		@RequestParam("post")		  	String postData
 	) {
 		// parse json from string
 		HashMap<String, String> parsedPostData = tools.stringToHashMap(postData);
 		// add picture to post
 		postService.addPostPicture(postPicture,parsedPostData);
+	}
+	/**
+	 * get post picture,will come on client side like resource
+	 * @param id  		post id
+	 * @return picture in response body
+	 */
+	@GetMapping("/post/picture/{id:.+}")
+	public ResponseEntity<byte[]> getPostPicture(@PathVariable("id") Long id) {
+		byte[] image = postService.getPost(id)
+				.getPicture().getBytes();
+		return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
 	}
 	/**
 	 * post request for adding like to post in group
@@ -154,19 +163,17 @@ public class PostController {
 	 * @return updated comments list
 	 */
 	@PostMapping("/new_comment")
-	public HashMap<String, Post> newComment(@RequestBody HashMap<String, String> request) {
+	public Post newComment(@RequestBody HashMap<String, String> request) {
 		// post where to add comment
-		Long postId  = Long.valueOf(request.get("post_id"));
+		Long postId = Long.valueOf(request.get("post_id"));
 		// add new comment to post
 		postService.addComment(
 				postId,
 				new Comment(
-					request.get("content"),
-					userService.getUser(request.get("author"))
+						request.get("content"),
+						userService.getUser(request.get("author"))
 				)
 		);
-		return new HashMap<>(){{
-			put("post", postService.getPost(postId));
-		}};
+		return postService.getPost(postId);
 	}
 }

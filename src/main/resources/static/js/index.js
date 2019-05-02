@@ -73,10 +73,9 @@ function newsFeed() {
             }),
           $('<div/>')
             .attr('class','feed-content')
-            .append(// posts container
+            .append(
               $('<div/>')
                 .attr('class','posts')
-                .css('width','100%')
             )
         )
     )
@@ -100,7 +99,7 @@ function getFeedPosts() {
 // render all posts in feed
 function renderFeedPosts(posts) {
   $('.posts').empty()
-  appendFeedPosts(posts)
+  appendPosts(posts)
 }
 /* json from ajax give objects in random
   so we sort them by id */
@@ -233,7 +232,7 @@ function createGroup() {
     data : formData,
     success : (result) => {
       // check if group was created
-      if (result['response'] === 'group created') {
+      if (result === 'group created') {
         // clear groups list
         $('.groups-box').empty()
         // update user groups
@@ -261,36 +260,6 @@ function getGroupData(group) {
     }),
     success : (result) => {
       groupData = $.extend(true, {}, result['group'])
-      getGroupImage()
-      getGroupBackground()
-    }
-  })
-}
-function getGroupImage() {
-  $.ajax({
-    type : 'POST',
-    contentType : 'application/json; charset=utf-8',
-    url : 'http://localhost:8080/group_image',
-    data : JSON.stringify({
-      'id' : groupData['id']
-    }),
-    success : (result) => {
-      $('.group-image')
-        .attr('src','data:image/jpg;base64,' + result)
-    }
-  })
-}
-function getGroupBackground() {
-  $.ajax({
-    type : 'POST',
-    contentType : 'application/json; charset=utf-8',
-    url : 'http://localhost:8080/group_background',
-    data : JSON.stringify({
-      'id' : groupData['id']
-    }),
-    success : (result) => {
-      $('.group-header')
-        .css('background-image','url(data:image/jpg;base64,' + result + ')')
     }
   })
 }
@@ -300,7 +269,6 @@ function getUserGroups() {
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
     url  : 'http://localhost:8080/user_groups',
-    async: false,
     data : Cookies.get('account-data'), // cookie with user data
     success : (result) => {
       // user groups list from request
@@ -324,10 +292,6 @@ function renderGroups(group) {
         getGroupData(group)
         // render group photo,posts and followers
         renderGroupContainer()
-        // load followers profile photo
-        for(i in groupData['followers']) {
-          followersPhoto(groupData['followers'][i])
-        }
       }
     )
   )
@@ -337,6 +301,8 @@ function renderGroupContainer() {
   $('.feed').remove()
   feedOpened  = false
   groupOpened = true
+  // hide right panel containing friends
+  $('.right-panel').css('display','none')
   // add group container
   $('.main-container').append(
     $('<div/>')
@@ -346,7 +312,12 @@ function renderGroupContainer() {
         // group header
         $('<div/>')
           .attr('class','group-header')
+          .css(
+            'background-image',
+            'url(' + 'http://localhost:8080/group/background/' + groupData['backgroundPhoto']['id'] + ')'
+          )
           .append(
+            // overlay making group background image darker
             $('<div/>')
               .attr('class','group-header-overlay'),
             // close button
@@ -363,45 +334,12 @@ function renderGroupContainer() {
         $('<div/>')
           .attr('class','group-content')
           .append(
-            // div containing posts
-            groupPostsContainer(groupData['posts']),
-            // container stores group followers list
-            groupfollowers(groupData['followers'])
+            $('<div/>').attr('class','posts')
           )
-      )
+      ),
+    groupfollowers(groupData['followers'])
   )
-}
-// get group followers profile photos
-function followersPhoto(follower) {
-  $.ajax({
-    type : 'POST',
-    url : 'http://localhost:8080/user_image',
-    contentType : 'application/json; charset=utf-8',
-    data : JSON.stringify({
-      'email' : follower['email']
-    }),
-    success : (result) => {
-      // set follower image
-      $('#follower' + follower['id'] + 'image')
-          .attr('src','data:image/jpg;base64,' + result)
-    }
-  })
-}
-function postAuthorPhoto(author) {
-  let photo
-  $.ajax({
-    type : 'POST',
-    url : 'http://localhost:8080/post_author_image',
-    contentType : 'application/json; charset=utf-8',
-    async : false,
-    data : JSON.stringify({
-      'author' : author['email']
-    }),
-    success : (result) => {
-      photo = result
-    }
-  })
-  return photo
+  appendPosts(groupData['posts'])
 }
 // close button for container
 function groupContainerClose() {
@@ -410,7 +348,11 @@ function groupContainerClose() {
     .append('<i/>')
       .attr('class','fas fa-chevron-left')
       .click(() => {
-          // remove group container from main container
+          // show right panel containing friends
+          $('.right-panel').css('display','block')
+          // remove followers container
+          $('.group-followers-container').remove()
+          // remove group container
           $('.group-container').remove()
           feedOpened  = false
           groupOpened = true
@@ -459,6 +401,7 @@ function newPostContainer(postType,parent_id) {
 }
 // send new post to group or user wall
 function sendNewPost(postType,parent_id) {
+  const postPicture = $('.choose-post-picture').prop('files')[0]
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
@@ -476,12 +419,12 @@ function sendNewPost(postType,parent_id) {
       'post_type' : postType
     }),
     success : (result) => {
+      // empty post input
+      $('.new-post-input').val('')
       // check if post have picture
-      if ($('.choose-post-picture').prop('files')[0] !== undefined) {
-        sendPostPicture(result)
+      if (postPicture !== undefined) {
+        sendPostPicture(result,postPicture)
       }else {
-        // empty post input
-        $('.new-post-input').val('')
         // check if post was send to user or group
         if (result['type'] === "User") {
           // update feed posts
@@ -489,14 +432,36 @@ function sendNewPost(postType,parent_id) {
         }else {
           // update group data
           getGroupData(groupData)
-          renderUpdatedPosts(groupData['posts'])
+          updatePosts(groupData['posts'])
         }
       }
     }
   })
 }
-function sendPostPicture(post) {
-
+// add picture to post after post was send
+function sendPostPicture(post,postPicture) {
+  const formData = new FormData()
+  // picture file
+  formData.append('post_picture', postPicture)
+  // post data
+  formData.append('post',JSON.stringify(post))
+  $.ajax({
+    type : 'POST',
+    url : 'http://localhost:8080/add_post_picture',
+    contentType : false,
+    processData : false,
+    data : formData,
+    success : (result) => {
+      if (post['type'] === "User") {
+        // update feed posts
+        getFeedPosts()
+      }else {
+        // update group data
+        getGroupData(groupData)
+        updatePosts(groupData['posts'])
+      }
+    }
+  })
 }
 // group image in container in top right corner
 function groupContainerImage() {
@@ -507,7 +472,10 @@ function groupContainerImage() {
     .append(
       // group image
       $('<img/>')
-        .attr('class','group-image'),
+        .attr({
+          'src': 'http://localhost:8080/group/image/' + groupData['profilePhoto']['id'],
+          'class': 'group-image'
+        }),
       $('<span/>')
         .html(groupData['name'])
     )
@@ -555,92 +523,70 @@ function groupfollower(follower) {
         .attr('class','group-follower-image')
         .append(
           $('<img/>')
-            .attr('id','follower' + follower['id'] + 'image')
+            .attr('src','http://localhost:8080/user/profile_picture/' + follower['email'])
         ),
       $('<span/>')
         .attr('class','group-follower-name')
         .html(follower['username'])
     ])
 }
-// post container
-function groupPostsContainer(posts) {
-  // posts container
-  const postsDiv = $('<div/>')
-    .attr('class','posts')
-  // sort posts
-  const sortedPosts = sortJsonObjects(posts)
-  // append to container all posts
-  for (i in sortedPosts) {
-    // append post div
-    postsDiv.append(groupPostDiv(sortedPosts[i]))
-  }
-  return postsDiv
-}
-function groupPostDiv(post) {
-  // post div
-  return $('<div/>')
-    .attr('class','post')
-    .append([
-      // post header
-      $('<div/>')
-        .attr('class','post-header')
-        .append(
-          // post author image and name
-          postAuthor(post['id']),
-          // time when post was created
-          $('<span/>')
-            .attr('class','post-time')
-            .html(timeConverter(post['time']))
-        ),
-      // content text
-      $('<div/>')
-        .attr('class','post-content-box')
-        .append(
-          $('<p/>')
-            .html(post['content'])
-        ),
-      // post footer
-      $('<div/>')
-        .attr('class','post-footer')
-        .append([
-          likeButton(post),
-          commentButton(post)
-        ])
-    ])
-}
+// // post container
+// function postsContainer(posts) {
+//   // posts container
+//   const postsDiv = $('<div/>')
+//     .attr('class','posts')
+//   // sort posts
+//   const sortedPosts = sortJsonObjects(posts)
+//   // append to container all posts
+//   for (i in sortedPosts) {
+//     // append post div
+//     postsDiv.append(postDiv(sortedPosts[i]))
+//   }
+//   return postsDiv
+// }
 // get post author data
 function getPostAuthor(post_id) {
   let author
   $.ajax({
-    type : 'POST',
-    contentType : 'application/json; charset=utf-8',
-    url : 'http://localhost:8080/post_author',
+    type : 'GET',
+    url : 'http://localhost:8080/post_author/' + post_id,
     async : false,
-    data : JSON.stringify({
-      'post_id' : post_id
-    }),
     success : (result) => {
-      author = result['author']
+      author = result
     }
   })
   return author
 }
 // add all posts to posts container
-function appendFeedPosts(posts) {
+function appendPosts(posts) {
   // sort posts
   const sortedPosts = sortJsonObjects(posts)
   // append to container all posts
   for (i in sortedPosts) {
-    // append posts
-    $('.posts').append(
-      feedPostDiv(sortedPosts[i]))
+    const post = sortedPosts[i]
+    // add post to feed
+    $('.posts').append(postDiv(post))
+    // if post contains picture add img element
+    if (post['picture'] !== null) {
+      $('.post-' + post['id'] + '-content-box')
+        .append(
+          // picture
+          $('<img/>')
+            .attr({
+              'class': 'post-picture',
+              'src': 'http://localhost:8080/post/picture/' + post['id']
+            })
+        )  
+    }
   }
 }
-function feedPostDiv(post) {
-  // post div
-  return $('<div/>')
-    .attr('class','post')
-    .append([
+function postDiv(post) {
+  const postDiv = $('<div/>')
+    .attr({
+      'class': 'post',
+      'id': 'post-' + post['id']
+    })
+    .append(
       // post header
       $('<div/>')
         .attr('class','post-header')
@@ -654,19 +600,27 @@ function feedPostDiv(post) {
         ),
       // content text
       $('<div/>')
-        .attr('class','post-content-box')
+        .attr('class','post-' + post['id'] + '-content-box')
         .append(
           $('<p/>')
-            .html(post['content'])
+            .attr('class','post-text')
+            .html(post['content']),
+          $('<div/>')
+            .attr('class','post-comments')
         ),
       // post footer
       $('<div/>')
         .attr('class','post-footer')
-        .append([
+        .css('margin-bottom','-10px')
+        .append(
           likeButton(post),
           commentButton(post)
-        ])
-    ])
+        )
+    )
+    if (post['picture'] !== null) {
+      postDiv.append(commentsContainer(post))
+    }
+    return postDiv
 }
 // convert time from long to hour and minute format
 function timeConverter(time) {
@@ -690,7 +644,9 @@ function postAuthor(post_id) {
       .attr('class','post-author-image')
       .append(
         $('<img/>')
-          .attr('src','data:image/jpg;base64,' + postAuthorPhoto(author))
+          .attr(
+            'src','http://localhost:8080/user/profile_picture/' + author['email']
+          )
       )
   ]
 }
@@ -738,13 +694,13 @@ function sendLike(post,action) {
       'post_id'   : post['id'],
       'author_id' : getUser()['id']
     }),
-    success: (result) => {
+    success: () => {
       // update posts list
       if (feedOpened) {
         getFeedPosts()
       }else if (groupOpened){
         getGroupData(groupData)
-        renderUpdatedPosts(groupData['posts'])
+        updatePosts(groupData['posts'])
       }
     }
   })
@@ -760,40 +716,22 @@ function commentButton(post) {
         // comments count number on icon
         .html(' ' + post['comments'].length)
     )
-    .click(() => showCommentsContainer(post))
-}
-// dialog showing post comments
-function showCommentsContainer(post) {
-  if (groupOpened) {
-    // append comments container to group container
-    $('.group-container').append(commentsContainer(post))
-  } else {
-    // append comments container to feed container
-    $('.feed').append(commentsContainer(post))
-  }
 }
 // container containing comments
 function commentsContainer(post) {
   return $('<div/>')
-    .attr('class','comments-container')
+    .attr({
+      'class': 'comments-container',
+      'id': 'comments-container-' + post['id']
+    })
     // comments container elements
     .append(
       $('<p/>')
         .attr('class','comments-paragraph')
         .html('Comments'),
-      // comments back button
-      $('<i/>')
-        .attr('class','fas fa-chevron-left comments-back-icon')
-        .click(() => {
-          // remove comments container
-          $('.comments-container').remove()
-          // restore group container scroll
-          $('.group-container').css('overflow','auto')
-        }),
       // comments divs
       postComments(post),
       $('<div/>')
-        .attr('class','comments-footer')
         .append(
           // new comment input
           $('<input/>')
@@ -813,15 +751,13 @@ function commentsContainer(post) {
 }
 // comments divs
 function postComments(post) {
-  // comments data
-  const comments = post['comments']
   const commentsBox = $('<div/>')
     .attr('class','comments')
     .css({
-      'overflow':'auto',
-      'max-height':'420px'
+      'overflow': 'auto',
+      'height': '205px'
     })
-  const sortedComments = sortJsonObjects(comments)
+  const sortedComments = sortJsonObjects(post['comments'])
   // add all comments divs
   for (i in sortedComments) {
     commentsBox.append(
@@ -856,20 +792,13 @@ function sendComment(post) {
       'author'  : getUser()['email']
     }),
     success: (result) => {
-      // update posts list
-      if (feedOpened) {
-        getFeedPosts()
-      }else if (groupOpened){
-        getGroupData(groupData)
-        renderUpdatedPosts(groupData['posts'])
-      }
-      // uddate post comments
+      // update post comments
       updateComments(result)
     }
   })
 }
 // update posts in group container
-function renderUpdatedPosts(posts) {
+function updatePosts(posts) {
   // sort posts
   const sortedPosts = sortJsonObjects(posts)
   // remove posts
@@ -877,13 +806,13 @@ function renderUpdatedPosts(posts) {
   // append to container new posts
   for (i in sortedPosts) {
     // append post div
-    $('.posts').append(groupPostDiv(sortedPosts[i]))
+    $('.posts').append(postDiv(sortedPosts[i]))
   }
 }
 // update post comments
 function updateComments(post) {
   // remove comments
-  $('.comments-container').empty()
+  $('#comments-container-' + post['id']).remove()
   // update comments container
-  $('.comments-container').append(commentsContainer(post))
+  $('#post-' + post['id']).append(commentsContainer(post))
 }
