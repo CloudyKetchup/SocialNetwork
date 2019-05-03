@@ -4,6 +4,13 @@ groupOpened = false
 function onLoad() {
   onloadRedirect()
   newsFeed()
+  // $.ajax({
+  //   type : 'GET',
+  //   url : 'http://localhost:8080/search_group/first group',
+  //   success : (result) => {
+  //     console.log(result)
+  //   }
+  // })
 }
 // return cookie data
 function getUser() {
@@ -84,12 +91,8 @@ function newsFeed() {
 // get home feed posts
 function getFeedPosts() {
   $.ajax({
-    type : 'POST',
-    contentType : 'application/json; charset=utf-8',
-    url : 'http://localhost:8080/feed_posts',
-    data : JSON.stringify({
-      'user_id' : getUser()['id']
-    }),
+    type : 'GET',
+    url : 'http://localhost:8080/feed_posts/' + getUser()['id'],
     success : (result) => {
       feedPosts = $.extend(true, {}, result)
       renderFeedPosts(result)
@@ -251,15 +254,11 @@ function createGroup() {
 // get group data like posts,images,followers...
 function getGroupData(group) {
   $.ajax({
-    type : 'POST',
-    contentType : 'application/json; charset=utf-8',
+    type : 'GET',
     async : false,
-    url : 'http://localhost:8080/group_data',
-    data : JSON.stringify({
-      'id': group['id']
-    }),
+    url : 'http://localhost:8080/get_group/' + group['id'],
     success : (result) => {
-      groupData = $.extend(true, {}, result['group'])
+      groupData = $.extend(true, {}, result)
     }
   })
 }
@@ -530,21 +529,6 @@ function groupfollower(follower) {
         .html(follower['username'])
     ])
 }
-// // post container
-// function postsContainer(posts) {
-//   // posts container
-//   const postsDiv = $('<div/>')
-//     .attr('class','posts')
-//   // sort posts
-//   const sortedPosts = sortJsonObjects(posts)
-//   // append to container all posts
-//   for (i in sortedPosts) {
-//     // append post div
-//     postsDiv.append(postDiv(sortedPosts[i]))
-//   }
-//   return postsDiv
-// }
-// get post author data
 function getPostAuthor(post_id) {
   let author
   $.ajax({
