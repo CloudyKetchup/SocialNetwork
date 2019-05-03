@@ -1,10 +1,9 @@
 package com.krypton.snetwork.controllers;
 
+import com.krypton.snetwork.model.Image;
 import com.krypton.snetwork.model.common.EntityType;
 import com.krypton.snetwork.model.group.*;
 import com.krypton.snetwork.model.user.User;
-import com.krypton.snetwork.repository.GroupRepository;
-import com.krypton.snetwork.repository.UserRepository;
 import com.krypton.snetwork.service.common.Tools;
 import com.krypton.snetwork.service.group.GroupServiceImpl;
 import com.krypton.snetwork.service.post.PostServiceImpl;
@@ -35,15 +34,15 @@ public class PostController {
 	private Tools tools;
 
 	/**
-	 * get user feed posts
-	 * @param request 		user id
+	 * get {@link User} feed {@link Post}'s,from groups and users who this user follows
+	 * @param id 			user id
 	 * @return list of posts entities
 	 */
-	@PostMapping("/feed_posts")
-	public LinkedList<Post> feedPosts(@RequestBody HashMap<String, Long> request) {
+	@GetMapping("/feed_posts/{id:.+}")
+	public LinkedList<Post> feedPosts(@PathVariable("id") Long id) {
 		// account requesting feed posts
-		User user = userService.getUser(request.get("user_id"));
-		// all user posts
+		User user = userService.getUser(id);
+
 		LinkedList<Post> feedPosts = new LinkedList<>(user.getPosts());
 		// all posts from groups user follows
 		for (Group group : user.getGroups()) {
@@ -54,7 +53,7 @@ public class PostController {
 	/**
 	 * add new post to group or user wall
 	 * @param request 		post data (content,author,time...)
-	 * @return post added to user or group
+	 * @return {@link Post} added to {@link User} or {@link Group}
 	 */
 	@PostMapping("/new_post")
 	public Post newPost(@RequestBody HashMap<String, String> request) {
@@ -87,18 +86,18 @@ public class PostController {
 		return tools.getLastElement(posts);
 	}
 	/**
-	 * get post author entity
+	 * get {@link Post} author
 	 * @param id 			post id
-	 * @return post author object from database
+	 * @return post author from database
 	 */
 	@GetMapping("/post_author/{id:.+}")
 	public User postAuthor(@PathVariable("id") Long id) {
 	    return postService.getPost(id).getAuthor();
 	}
 	/**
-	 * get post author photo
+	 * get {@link Post} author {@link Image}
 	 * @param email 		author email
-	 * @return author photo in base64 format
+	 * @return author profile photo
 	 */
 	@GetMapping("/user/profile_picture/{email:.+}")
 	public ResponseEntity<byte[]> getAuthorImage(@PathVariable("email") String email) {
@@ -110,8 +109,8 @@ public class PostController {
 		return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
 	}
 	/**
-	 * add picture to post
-	 * @param postPicture 	picture to be added to post
+	 * add picture to {@link Post}
+	 * @param postPicture 	picture for post
 	 * @param postData 		post name and id
 	 */
 	@PostMapping("/add_post_picture")
@@ -125,9 +124,9 @@ public class PostController {
 		postService.addPostPicture(postPicture,parsedPostData);
 	}
 	/**
-	 * get post picture,will come on client side like resource
+	 * get {@link Post} {@link Image},will come on client side like resource
 	 * @param id  		post id
-	 * @return picture in response body
+	 * @return post picture
 	 */
 	@GetMapping("/post/picture/{id:.+}")
 	public ResponseEntity<byte[]> getPostPicture(@PathVariable("id") Long id) {
@@ -136,8 +135,8 @@ public class PostController {
 		return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
 	}
 	/**
-	 * post request for adding like to post in group
-	 * @param request 		group,post and id
+	 * add like to {@link Post}
+	 * @param request 		{@link User} and {@link Post} id's
 	 */
 	@PostMapping("add_like")
 	public void addLike(@RequestBody HashMap<String, Long> request) {
@@ -147,8 +146,8 @@ public class PostController {
 		);
 	}
 	/**
-	 * post request for removing like from post in group
-	 * @param request 		group,post and id
+	 * remove like from {@link Post}
+	 * @param request 		{@link User} and {@link Post} id's
 	 */
 	@PostMapping("remove_like")
 	public void removeLike(@RequestBody HashMap<String, Long> request) {
@@ -158,8 +157,8 @@ public class PostController {
 		);
 	}
 	/**
-	 * add new post comment
-	 * @param request		 group,post and author id
+	 * add new {@link Post} {@link Comment}
+	 * @param request		 {@link Comment} content,{@link Post} id,{@link User} id 
 	 * @return updated comments list
 	 */
 	@PostMapping("/new_comment")
