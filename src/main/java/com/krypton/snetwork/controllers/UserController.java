@@ -4,10 +4,7 @@ import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.service.user.UserServiceImpl;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 
 @RestController
@@ -15,7 +12,6 @@ public class UserController {
 
     @Autowired
     private UserServiceImpl userService;
-
     /**
      * post request for getting user groups list
      * @param request 	user account data
@@ -38,5 +34,9 @@ public class UserController {
         byte[] image  = member.getProfilePhoto().getBytes();
 
         return Base64.encodeBase64(image);
+    }
+    @GetMapping("/search/user/{username:.+}")
+    public User searchUser(@PathVariable("username") String username) {
+        return userService.searchUser(username);
     }
 }

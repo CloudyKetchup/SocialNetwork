@@ -2,7 +2,6 @@
 	box-sizing: border-box;
 	font-family: Rubik, serif;
 	will-change: transform;
-
 }
 body,html {
 	margin: 0;
@@ -64,6 +63,34 @@ input {
 	width: 40%;
 	float: right;
 }
+.search-field {
+	float: right;
+    margin-right: -70px;
+    margin-top: 5px;
+    height: 30px;
+    width: 50%;
+}
+.search-result {
+	display: block;
+	background: white;
+    border-radius: 5px;
+    right: 60px;
+    margin-top: 40px;
+    width: 50%;
+    z-index: 2;
+    position: absolute;
+}
+.search-method-button {
+	background-color: black;
+	color: white;
+	text-align: center;
+    width: 50%;
+    padding: 10px;
+}
+.search-method-button > i {
+	margin-left: 10px;
+    float: left;
+}
 .logo {
 	height: 50px;
 	width: 50px;
@@ -83,7 +110,8 @@ input {
 	width: 100%;
 	padding-top: 5px;
 	overflow-y: scroll;
-	position: relative;
+	z-index: -1;
+    position: absolute;
 }
 .right-panel,.left-panel {
 	height: 95%;
@@ -311,6 +339,7 @@ input {
     margin-left: 20px;
 }
 .post {
+	box-shadow: 0px 0px 11px -2px rgba(0,0,0,0.75);
 	background-color: #a7a7a757;
 	color: #161616;
 	padding: 10px;
@@ -334,7 +363,9 @@ input {
 }
 .post-picture {
 	border-radius: 5px;
-    width: 62%;
+    height: 350px;
+    width: 510px;
+    object-fit: cover;
 }
 .post-content-box {
     width: 63%;
@@ -373,6 +404,8 @@ input {
     width: 70%;
 }
 .posts {
+	background: white;
+	border-radius: 5px;
 	min-height: 95%;
 	width: 100%;
 }
@@ -424,15 +457,24 @@ input {
 	margin-bottom: 5px;
 	background: none;
 }
+.comments {
+	top: 40px;
+    bottom: 40px;
+    width: 100%;
+    position: absolute;
+    overflow: auto;
+}
 .comments-container {
 	background-color: black;
     color: white;
     min-width: 35%;
-    margin-top: -300px;
+    top: 20%;
+    bottom: 6%;
     margin-right: 5px;
-    float: right;
+    right: 0;
     border-radius: 5px;
     overflow-y: hidden;
+    position: absolute;
 }
 .comments-container > p {
 	text-align: center;
@@ -440,6 +482,11 @@ input {
 .comments-paragraph {
 	margin-top: 10px;
     margin-bottom: 10px;
+}
+.comments-footer {
+	bottom: 0;
+    width: 100%;
+    position: absolute;
 }
 .comment {
 	text-align: start;

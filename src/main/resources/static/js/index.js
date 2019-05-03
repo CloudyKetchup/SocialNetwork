@@ -4,13 +4,6 @@ groupOpened = false
 function onLoad() {
   onloadRedirect()
   newsFeed()
-  // $.ajax({
-  //   type : 'GET',
-  //   url : 'http://localhost:8080/search_group/first group',
-  //   success : (result) => {
-  //     console.log(result)
-  //   }
-  // })
 }
 // return cookie data
 function getUser() {
@@ -42,6 +35,94 @@ document.getElementById('create-group-submit').onclick = () => {
 // hide error field if something is typed in group name field
 document.getElementById('group-name').onkeypress = () => {
   $('#field-error').html('')
+}
+// add search field to navigation
+function showSearchField() {
+  searchUsers  = true
+  searchGroups = false
+  $('.nav-wrapper')
+    .append(
+      $('<input/>')
+        .attr({
+          'class': 'search-field',
+          'placeholder': 'Search users or Groups'
+        })
+        .on('keyup', () => {
+          if ($('.search-field').val() !== '') {
+            // search user or group in database when user is typing
+            if (searchUsers) {
+              searchEntity('user')
+            }else {
+              searchEntity('group')
+            }
+          }
+        }),
+      // result div
+      searchResult()
+    )
+  changeSearchColors()
+}
+function changeSearchColors() {
+  if (searchUsers) {
+    $('.search-user')
+      .css('color','#f44242')
+    $('.search-group')
+      .css('color','white')
+  }else {
+    $('.search-group')
+      .css('color','#f44242')
+    $('.search-user')
+      .css('color','white')
+  }
+}
+// container below search
+function searchResult() {
+  return $('<div/>')
+    .attr('class','search-result')
+    .append(
+      // choose for search user
+      $('<div/>')
+        .attr('class','search-user search-method-button')
+        .css('float','left')
+        .html('User')
+        .append(
+          $('<i/>')
+            .attr('class','fas fa-user')
+        )
+        .click(() => {
+          searchUsers  = true
+          searchGroups = false
+          changeSearchColors()
+        }),
+      // choose for search group
+      $('<div/>')
+        .attr('class','search-group search-method-button')
+        .css('float','right')
+        .html('Group')
+        .append(
+          $('<i/>')
+            .attr('class','fas fa-users')
+        )
+        .click(() => {
+          searchUsers  = false
+          searchGroups = true
+          changeSearchColors()
+        })
+    )
+}
+// search user or group in database
+function searchEntity(entity) {
+  $.ajax({
+    type : 'GET',
+    url : 'http://localhost:8080/search/' + entity + '/' + $('.search-field').val(),
+    success : (result) => {
+      if (result === '') {
+
+      }else {
+
+      }
+    }
+  })
 }
 function chooseAvatar() {
   $('#choose-user-image').click()
@@ -684,7 +765,7 @@ function sendLike(post,action) {
         getFeedPosts()
       }else if (groupOpened){
         getGroupData(groupData)
-        updatePosts(groupData['posts'])
+        updatePosts()
       }
     }
   })
@@ -696,7 +777,10 @@ function commentButton(post) {
     .attr('class','comment-button')
     .append(
       $('<i/>')
-        .attr('class','fas fa-comment')
+        .attr({
+          'class': 'fas fa-comment',
+          'id': 'post-' + post['id'] + '-comments-button-icon'
+        })
         // comments count number on icon
         .html(' ' + post['comments'].length)
     )
@@ -716,6 +800,7 @@ function commentsContainer(post) {
       // comments divs
       postComments(post),
       $('<div/>')
+        .attr('class','comments-footer')
         .append(
           // new comment input
           $('<input/>')
@@ -738,8 +823,7 @@ function postComments(post) {
   const commentsBox = $('<div/>')
     .attr('class','comments')
     .css({
-      'overflow': 'auto',
-      'height': '205px'
+      'overflow': 'auto'
     })
   const sortedComments = sortJsonObjects(post['comments'])
   // add all comments divs
@@ -799,4 +883,6 @@ function updateComments(post) {
   $('#comments-container-' + post['id']).remove()
   // update comments container
   $('#post-' + post['id']).append(commentsContainer(post))
+  // update comments number
+  $('#post-' + post['id'] + '-comments-button-icon').html(' ' + post['comments'].length)
 }
