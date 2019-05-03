@@ -19,23 +19,26 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void saveMemberGroup(Group group, User member) {
-		// add group to member groups list
-		member.getGroups().add(group);
-		// update member
-		userRepository.save(member);
+	public void addGroupToUser(Group group, User user) {
+		// add group to user groups list
+		user.getGroups().add(group);
+		// update user
+		userRepository.save(user);
 	}
 
 	@Override
 	public User getUser(String email) {
-		// user entity
 		return userRepository.findByEmail(email);
 	}
 
 	@Override
 	public User getUser(Long id) {
-		// user entity
 		return userRepository.findById(id).get();
+	}
+
+	@Override
+	public User searchUser(String username) {
+		return userRepository.findByName(username);
 	}
 
 	@Override

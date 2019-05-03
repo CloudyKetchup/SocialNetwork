@@ -39,7 +39,7 @@ public class GroupServiceImpl implements GroupService {
 		// save new group entity to admin
 		saveGroupMember(group, admin);
 		// save admin entity to group
-		userService.saveMemberGroup(group, admin);
+		userService.addGroupToUser(group, admin);
 	}
 
 	@Override

@@ -11,31 +11,37 @@ public interface UserService {
 	 * @param email 	user email
 	 * @return boolean
 	 */
-	public boolean userExist(String email);
+	boolean userExist(String email);
 	/**
-	 * add group entity to member groups list
+	 * add {@link Group} to {@link User} groups list
 	 * @param group  	group entity
-	 * @param member 	member entity
+	 * @param user 		user entity
 	 */
-	public void saveMemberGroup(Group group, User member);
+	void addGroupToUser(Group group, User user);
 	/**
-	 * get user entity object from database by email
+	 * get {@link User} from database by email
 	 * @param  email 	user email
-	 * @return 			User entity
+	 * @return User entity
 	 */
-	public User getUser(String email);
+	User getUser(String email);
 	/**
-	 * get user entity object from database by id
+	 * get {@link User} from database by id
 	 * @param  id 		user id
-	 * @return 			User entity
+	 * @return User entity
 	 */
-	public User getUser(Long id);
+	User getUser(Long id);
 	/**
-	 * save new user account to database
+	 * find {@link User} in database by name
+	 * @param username	{@link User} name
+	 * @return {@link User} from database 
+	 */
+	User searchUser(String username);
+	/**
+	 * save new {@link User} to database
 	 * @param username
 	 * @param email
 	 * @param password
 	 * @param image 	// user avatar bytes
 	 */
-	public void saveUser(String username, String email, String password,Image image);
+	void saveUser(String username, String email, String password, Image image);
 }
