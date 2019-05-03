@@ -1,7 +1,10 @@
 package com.krypton.snetwork.service.common;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -11,7 +14,7 @@ public class Tools {
 	/**
      * parses json from string to hash map
      * @param json		String with keys and values
-     * @return parsed hashmap from string
+     * @return hash map from string
      */
     public HashMap<String, String> stringToHashMap(String json) {
         // hash map parsed from string
@@ -43,5 +46,16 @@ public class Tools {
             lastElement = element;
         }
         return lastElement;
+    }
+    public File multipartToFile(MultipartFile file) {
+        File fileDir = new File(
+                System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename()
+        );
+        try {
+            file.transferTo(fileDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return fileDir;
     }
 }

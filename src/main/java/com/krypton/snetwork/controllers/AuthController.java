@@ -104,7 +104,7 @@ public class AuthController{
             }};
         }else {
             // insert user profile photo to database
-            imageService.insertImage(email,image);
+            imageService.insertProfilePicture(email,image);
             // save user entity to database
             userService.saveUser(
                     username,

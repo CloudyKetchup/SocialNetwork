@@ -2,6 +2,7 @@ package com.krypton.snetwork.service.image;
 
 import com.krypton.snetwork.model.Image;
 import com.krypton.snetwork.repository.ImageRepository;
+import com.krypton.snetwork.service.common.Tools;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 @Service
 public class ImageServiceImpl implements ImageService {
@@ -19,13 +21,15 @@ public class ImageServiceImpl implements ImageService {
 	@Autowired
 	private ImageRepository imageRepository;
 
+	@Autowired
+	private Tools tools;
+
 	@Override
-	public void insertImage(String name, MultipartFile image) {
+	public void insertProfilePicture(String name, MultipartFile picture) {
 		try {
-			// group image entity
-			Image imageEntity = createImage(name, image);
-			// save image to database
-			imageRepository.save(imageEntity);
+			Image pictureEntity = createProfilePicture(name, picture);
+			// save picture to database
+			imageRepository.save(pictureEntity);
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -34,36 +38,47 @@ public class ImageServiceImpl implements ImageService {
 	@Override
 	public void insertBackground(String name, MultipartFile background) {
 		try {
-			// group background entity
-			Image imageEntity = createBackground(name, background);
+			Image backgroundEntity = createBackground(name, background);
 			// save background to database
-			imageRepository.save(imageEntity);
+			imageRepository.save(backgroundEntity);
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public Image createImage(String name, MultipartFile image) throws IOException {
-		// resize image for faster loading
-		byte[] newImage = resizeImage(multipartToFile(image));
-		// image entity
+	public Image createProfilePicture(String name, MultipartFile image) throws IOException {
+		byte[] imageBytes;
+
+		if(profilePictureNeedResize(tools.multipartToFile(image))) {
+			imageBytes = resizeProfilePicture(tools.multipartToFile(image));
+		}else {
+			imageBytes = image.getBytes();
+		}
+		assert imageBytes != null;
+
 		return new Image(
 			name + "-photo",
 			image.getContentType(),
-			newImage
+			imageBytes
 		);
 	}
 
 	@Override
 	public Image createBackground(String name, MultipartFile background) throws IOException {
-		// resize background for faster loading
-		byte[] newBackground = resizeBackground(multipartToFile(background));
-		// background entity
+		byte[] backgroundBytes;
+
+		if (backgroundNeedResize(tools.multipartToFile(background))) {
+			backgroundBytes = resizeBackground(tools.multipartToFile(background));
+		}else {
+			backgroundBytes = background.getBytes();
+		}
+		assert backgroundBytes != null;
+
 		return new Image(
 			name + "-background",
 			background.getContentType(),
-			newBackground
+			backgroundBytes
 		); 
 	}
 
@@ -79,42 +94,60 @@ public class ImageServiceImpl implements ImageService {
 	
 	@Override
 	public Image getImage(Long id) {
-		return imageRepository.findById(id).get();
+		Optional<Image> image = imageRepository.findById(id);
+		// image must be present
+		assert image.isPresent();
+
+		return image.get();
 	}
 
 	@Override
-	public byte[] resizeImage(File image) throws IOException {
-		// resize image to given width and height
-		BufferedImage resizedImage = Thumbnails.of(image).size(500, 500).asBufferedImage();
+	public byte[] resizeProfilePicture(File picture) throws IOException {
+		// resize picture to given width and height
+		BufferedImage updatedPicture = Thumbnails.of(picture).size(500, 500).asBufferedImage();
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-		ImageIO.write(resizedImage, "jpg", outputStream);
-		// write bytes to byte array
+		ImageIO.write(updatedPicture, "jpg", outputStream);
+
 		return outputStream.toByteArray();
 	}
 
 	@Override
-	public byte[] resizeBackground(File image) throws IOException {
-		// resize image to given width and height
-		BufferedImage newImage = Thumbnails.of(image).size(1280,720).asBufferedImage();
+	public byte[] resizeBackground(File background) throws IOException {
+		// resize background to given width and height
+		BufferedImage updatedBackground = Thumbnails.of(background).size(1280,720).asBufferedImage();
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-		ImageIO.write(newImage, "jpg", outputStream);
-		// write bytes to byte array
+		ImageIO.write(updatedBackground, "jpg", outputStream);
+
 		return outputStream.toByteArray();
 	}
 
-	private File multipartToFile(MultipartFile file) {
-		File fileDir = new File(
-				System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename()
-		);
+	@Override
+	public boolean profilePictureNeedResize(File image) {
+		BufferedImage bufferedImage = null;
 		try {
-			file.transferTo(fileDir);
-		} catch (IOException e) {
+			bufferedImage = ImageIO.read(image);
+		}catch (IOException e) {
 			e.printStackTrace();
 		}
-		return fileDir;
+		assert bufferedImage != null;
+ 
+		return bufferedImage.getWidth() > 500 && bufferedImage.getHeight() > 500;
+	}
+
+	@Override
+	public boolean backgroundNeedResize(File background) {
+		BufferedImage bufferedBackground = null;
+		try {
+			bufferedBackground = ImageIO.read(background);
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+		assert bufferedBackground != null;
+
+		return bufferedBackground.getWidth() > 1280 && bufferedBackground.getHeight() > 720;
 	}
 }

@@ -70,7 +70,7 @@ public class GroupController {
             return "group already exist";
         }else {
             // insert group photo to database
-            imageService.insertImage(name, image);
+            imageService.insertProfilePicture(name, image);
             // insert group background to database
             imageService.insertBackground(name, background);
             // insert group to database

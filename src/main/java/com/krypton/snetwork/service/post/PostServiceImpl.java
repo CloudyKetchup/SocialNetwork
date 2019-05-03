@@ -80,7 +80,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void addPostPicture(MultipartFile postPhoto, HashMap<String, String> postData) {
         // insert picture to database
-        imageService.insertImage(postData.get("id") + "-post",postPhoto);
+        imageService.insertProfilePicture(postData.get("id") + "-post",postPhoto);
         // picture for post inserted in database
         Image insertedPicture = imageService.getImage(postData.get("id") + "-post");
         // add picture to post

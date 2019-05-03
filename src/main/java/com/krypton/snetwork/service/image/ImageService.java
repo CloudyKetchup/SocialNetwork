@@ -13,7 +13,7 @@ public interface ImageService {
 	 * @param name 		image entity name
 	 * @param image 	image file from request
 	 */
-	void insertImage(String name, MultipartFile image);
+	void insertProfilePicture(String name, MultipartFile image);
 	/**
 	 * save new background to database
 	 * @param name 		 image entity name
@@ -22,12 +22,12 @@ public interface ImageService {
 	void insertBackground(String name, MultipartFile background);
 	/** 
 	 * create image entity
-	 * @param name  	image entity name
-	 * @param image 	image multipart file from request
+	 * @param name    image entity name
+	 * @param image    image multipart file from request
 	 * @throws IOException
 	 * @return image entity
 	 */
-	Image createImage(String name, MultipartFile image) throws IOException;
+	Image createProfilePicture(String name, MultipartFile image) throws IOException;
 	/** 
 	 * create background entity
 	 * @param name  		background entity name
@@ -60,7 +60,7 @@ public interface ImageService {
 	 * @throws IOException
 	 * @return byte array of image
 	 * */
-	byte[] resizeImage(File file) throws IOException;
+	byte[] resizeProfilePicture(File file) throws IOException;
 	/**
 	 * resize background for lower file size
 	 * @param file 		image file for resize
@@ -68,4 +68,8 @@ public interface ImageService {
 	 * @return byte array of image
 	 * */
 	byte[] resizeBackground(File file) throws IOException;
+
+	boolean profilePictureNeedResize(File image);
+
+	boolean backgroundNeedResize(File background);
 }
