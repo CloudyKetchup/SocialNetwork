@@ -1,6 +1,6 @@
 package com.krypton.snetwork.repository;
 
-import com.krypton.snetwork.model.group.Post;
+import com.krypton.snetwork.model.common.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
