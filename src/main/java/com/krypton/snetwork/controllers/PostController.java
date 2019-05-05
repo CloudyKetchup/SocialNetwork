@@ -1,11 +1,13 @@
 package com.krypton.snetwork.controllers;
 
-import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.common.Post;
+import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.common.EntityType;
 import com.krypton.snetwork.model.group.*;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.service.common.Tools;
 import com.krypton.snetwork.service.group.GroupServiceImpl;
+import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.post.PostServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ public class PostController {
 	private GroupServiceImpl groupService;
 
 	@Autowired
+	private ImageServiceImpl imageService;
+
+	@Autowired
 	private Tools tools;
 
 	/**
@@ -51,8 +56,8 @@ public class PostController {
 		return feedPosts;
 	}
 	/**
-	 * add new post to group or user wall
-	 * @param request 		post data (content,author,time...)
+	 * add new {@link Post} to {@link Group} or {@link User} wall
+	 * @param request 		{@link Post} data (content,author,time...)
 	 * @return {@link Post} added to {@link User} or {@link Group}
 	 */
 	@PostMapping("/new_post")
@@ -87,46 +92,30 @@ public class PostController {
 	}
 	/**
 	 * get {@link Post} author
-	 * @param id 			post id
-	 * @return post author from database
+	 * @param id 			{@link Post} id
+	 * @return {@link Post} author from database
 	 */
 	@GetMapping("/post_author/{id:.+}")
 	public User postAuthor(@PathVariable("id") Long id) {
 	    return postService.getPost(id).getAuthor();
 	}
 	/**
-	 * get {@link Post} author {@link Image}
-	 * @param email 		author email
-	 * @return author profile photo
-	 */
-	@GetMapping("/user/profile_picture/{email:.+}")
-	public ResponseEntity<byte[]> getAuthorImage(@PathVariable("email") String email) {
-		// author entity
-		User author  = userService.getUser(email);
-
-		byte[] image = author.getProfilePhoto().getBytes();
-
-		return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
-	}
-	/**
 	 * add picture to {@link Post}
-	 * @param postPicture 	picture for post
-	 * @param postData 		post name and id
+	 * @param postPicture 	picture for {@link Post}
+	 * @param postId 		{@link Post} id
 	 */
 	@PostMapping("/add_post_picture")
 	public void addPostPicture(
 		@RequestParam("post_picture")	MultipartFile postPicture,
-		@RequestParam("post")		  	String postData
+		@RequestParam("post")		  	Long postId
 	) {
-		// parse json from string
-		HashMap<String, String> parsedPostData = tools.stringToHashMap(postData);
 		// add picture to post
-		postService.addPostPicture(postPicture,parsedPostData);
+		postService.addPostPicture(postPicture,postId);
 	}
 	/**
 	 * get {@link Post} {@link Image},will come on client side like resource
-	 * @param id  		post id
-	 * @return post picture
+	 * @param id  		{@link Post} id
+	 * @return {@link Post} picture
 	 */
 	@GetMapping("/post/picture/{id:.+}")
 	public ResponseEntity<byte[]> getPostPicture(@PathVariable("id") Long id) {
