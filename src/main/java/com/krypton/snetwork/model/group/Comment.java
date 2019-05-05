@@ -1,6 +1,6 @@
 package com.krypton.snetwork.model.group;
 
-import com.krypton.snetwork.model.User;
+import com.krypton.snetwork.model.user.User;
 import lombok.Data;
 
 import javax.persistence.*;
