@@ -1,6 +1,7 @@
 package com.krypton.snetwork.model.group;
 
-import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.common.Post;
+import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.common.EntityType;
 import com.krypton.snetwork.model.user.User;
 import lombok.Data;
@@ -44,16 +45,19 @@ public class Group {
 
 	public Group() {}
 
-	public Group(
-			String name,
-			User admin,
-			Image profilePhoto,
-			Image backgroundPhoto
-	) {
+	public Group(String name, User admin, Image profilePhoto, Image backgroundPhoto) {
 		this.name 			 = name;
 		this.admin 			 = admin;
 		this.profilePhoto 	 = profilePhoto;
 		this.backgroundPhoto = backgroundPhoto;
 		this.type 			 = EntityType.GROUP;
+		followers.add(admin);
+	}
+
+	public Group(String name,User admin) {
+		this.name  = name;
+		this.admin = admin;
+		this.type  = EntityType.GROUP;
+		followers.add(admin);
 	}
 }
