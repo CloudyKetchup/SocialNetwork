@@ -110,7 +110,7 @@ public class AuthController{
                     username,
                     email,
                     password,
-                    imageService.getImage(email)
+                    imageService.getProfilePicture(email)
             );
             return new HashMap<>(){{
                 put("response","registered");
