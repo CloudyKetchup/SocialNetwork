@@ -86,10 +86,38 @@ input {
 	text-align: center;
     width: 50%;
     padding: 10px;
+    transition: 0.2s;
 }
 .search-method-button > i {
 	margin-left: 10px;
     float: left;
+}
+.search-entity {
+	height: 45px;
+    width: 100%;
+    line-height: 35px;
+    padding: 1%;
+    margin-top: 38px;
+    transition: 0.2s;
+}
+.search-entity:hover {
+	background-color: rgba(0,0,0,0.3);
+	cursor: pointer;
+}
+.search-entity-image,.group-follower-image {
+	height: 40px;
+	width: 40px;
+	float: left;
+}
+.search-entity-image > img,.group-follower-image > img {
+	width: 35px;
+	height: 35px;
+	border-radius: 100px;
+	object-fit: cover;
+}
+.search-entity-name {
+	float: left;
+    margin-left: 20px;
 }
 .logo {
 	height: 50px;
@@ -322,17 +350,6 @@ input {
 	background-color: #232323;
 	cursor: pointer;
 }
-.group-follower-image {
-	height: 40px;
-	width: 40px;
-	float: left;
-}
-.group-follower-image > img {
-	width: 35px;
-	height: 35px;
-	border-radius: 100px;
-	object-fit: cover;
-}
 .group-follower-name {
 	float: left;
 	color: white;
@@ -404,7 +421,6 @@ input {
     width: 70%;
 }
 .posts {
-	background: white;
 	border-radius: 5px;
 	min-height: 95%;
 	width: 100%;

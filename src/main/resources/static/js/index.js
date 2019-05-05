@@ -1,5 +1,6 @@
-feedOpened  = true
-groupOpened = false
+feedOpened   = true
+groupOpened  = false
+searchOpened = false
 
 function onLoad() {
   onloadRedirect()
@@ -36,6 +37,19 @@ document.getElementById('create-group-submit').onclick = () => {
 document.getElementById('group-name').onkeypress = () => {
   $('#field-error').html('')
 }
+// create cookie
+function setCookie(account) {
+  // remove old cookie
+  Cookies.remove('account-data',{ path : ''})
+  // create new cookie
+  Cookies.set('account-data', {
+    'id'      : account['id'],
+    'username': account['username'],
+    'email'   : account['email'],
+    'password': account['password'],
+    'path'    : ''  // path to cookie
+  })
+}
 // add search field to navigation
 function showSearchField() {
   searchUsers  = true
@@ -44,7 +58,7 @@ function showSearchField() {
     .append(
       $('<input/>')
         .attr({
-          'class': 'search-field',
+          'class': 'search search-field',
           'placeholder': 'Search users or Groups'
         })
         .on('keyup', () => {
@@ -61,6 +75,11 @@ function showSearchField() {
       searchResult()
     )
   changeSearchColors()
+  searchOpened = true
+}
+function closeSearchField() {
+  $('.search').remove()
+  searchOpened = false
 }
 function changeSearchColors() {
   if (searchUsers) {
@@ -78,7 +97,7 @@ function changeSearchColors() {
 // container below search
 function searchResult() {
   return $('<div/>')
-    .attr('class','search-result')
+    .attr('class','search search-result')
     .append(
       // choose for search user
       $('<div/>')
@@ -113,16 +132,41 @@ function searchResult() {
 // search user or group in database
 function searchEntity(entity) {
   $.ajax({
-    type : 'GET',
-    url : 'http://localhost:8080/search/' + entity + '/' + $('.search-field').val(),
+    type  : 'GET',
+    url   : 'http://localhost:8080/' + entity + '/name=' + $('.search-field').val(),
     success : (result) => {
-      if (result === '') {
-
-      }else {
-
+      // check if entity finded and div with entity is not already created
+      if (result !== '' && $('#search-entity-' + result['id']).length == 0) {
+        // append to search result finded user or group
+        $('.search-result').append(searchResultEntity(result,entity))
+        // save finded entity
+        findedEntity = $.extend(true, {} ,result)
+      // check if any entity was founded 
+      }else if (result === '' && findedEntity !== undefined) {
+        // remove previously finded entity div
+        $('#search-entity-' + findedEntity['id']).remove()
       }
     }
   })
+}
+// div for searched user or group
+function searchResultEntity(entity,type) {
+  return $('<div>')
+    .attr({
+      'class': 'search-entity',
+      'id': 'search-entity-' + entity['id']
+    })
+    .append([
+      $('<div/>')
+        .attr('class','search-entity-image')
+        .append(
+          $('<img/>')
+            .attr('src','http://localhost:8080/image/' + entity['profilePhoto']['id'])
+        ),
+      $('<span/>')
+        .attr('class','search-entity-name')
+        .html(entity['name'])
+    ])
 }
 function chooseAvatar() {
   $('#choose-user-image').click()
@@ -284,19 +328,6 @@ function loginResponseHandler(result,emailfield,passwordfield) {
     passwordfield.val('')
   }
 }
-// create cookie
-function setCookie(account) {
-  // remove old cookie
-  Cookies.remove('account-data',{ path : ''})
-  // create new cookie
-  Cookies.set('account-data', {
-    'id': account['id'],
-    'username': account['username'],
-    'email': account['email'],
-    'password': account['password'],
-    'path': ''  // path to cookie
-  });
-}
 // create new group request
 function createGroup() {
   const formData = new FormData()
@@ -310,7 +341,7 @@ function createGroup() {
   formData.append('admin', getUser()['email'])
   $.ajax({
     type : 'POST',
-    url : 'http://localhost:8080/new_group',
+    url : 'http://localhost:8080/group/new',
     contentType: false,
     processData: false,
     data : formData,
@@ -337,7 +368,7 @@ function getGroupData(group) {
   $.ajax({
     type : 'GET',
     async : false,
-    url : 'http://localhost:8080/get_group/' + group['id'],
+    url : 'http://localhost:8080/group/id=' + group['id'],
     success : (result) => {
       groupData = $.extend(true, {}, result)
     }
@@ -346,13 +377,11 @@ function getGroupData(group) {
 // request user groups json
 function getUserGroups() {
   $.ajax({
-    type : 'POST',
-    contentType : 'application/json; charset=utf-8',
-    url  : 'http://localhost:8080/user_groups',
-    data : Cookies.get('account-data'), // cookie with user data
+    type : 'GET',
+    url  : 'http://localhost:8080/user/groups/' + getUser()['email'],
     success : (result) => {
       // user groups list from request
-      const sortedGroups = sortJsonObjects(result['groups'])
+      const sortedGroups = sortJsonObjects(result)
       for (i in sortedGroups) {
         // add group div to list from right panel
         renderGroups(sortedGroups[i])
@@ -394,7 +423,7 @@ function renderGroupContainer() {
           .attr('class','group-header')
           .css(
             'background-image',
-            'url(' + 'http://localhost:8080/group/background/' + groupData['backgroundPhoto']['id'] + ')'
+            'url(' + 'http://localhost:8080/image/' + groupData['backgroundPhoto']['id'] + ')'
           )
           .append(
             // overlay making group background image darker
@@ -524,7 +553,7 @@ function sendPostPicture(post,postPicture) {
   // picture file
   formData.append('post_picture', postPicture)
   // post data
-  formData.append('post',JSON.stringify(post))
+  formData.append('post',post['id'])
   $.ajax({
     type : 'POST',
     url : 'http://localhost:8080/add_post_picture',
@@ -553,7 +582,7 @@ function groupContainerImage() {
       // group image
       $('<img/>')
         .attr({
-          'src': 'http://localhost:8080/group/image/' + groupData['profilePhoto']['id'],
+          'src': 'http://localhost:8080/image/' + groupData['profilePhoto']['id'],
           'class': 'group-image'
         }),
       $('<span/>')
@@ -603,11 +632,11 @@ function groupfollower(follower) {
         .attr('class','group-follower-image')
         .append(
           $('<img/>')
-            .attr('src','http://localhost:8080/user/profile_picture/' + follower['email'])
+            .attr('src','http://localhost:8080/image/' + follower['profilePhoto']['id'])
         ),
       $('<span/>')
         .attr('class','group-follower-name')
-        .html(follower['username'])
+        .html(follower['name'])
     ])
 }
 function getPostAuthor(post_id) {
@@ -699,7 +728,7 @@ function postAuthor(post_id) {
   return [
     // username
     $('<span/>')
-      .html(author['username'])
+      .html(author['name'])
       .css({
         'line-height':'200%',
         'margin-left':'10px'
@@ -710,7 +739,7 @@ function postAuthor(post_id) {
       .append(
         $('<img/>')
           .attr(
-            'src','http://localhost:8080/user/profile_picture/' + author['email']
+            'src','http://localhost:8080/image/' + author['profilePhoto']['id']
           )
       )
   ]
@@ -867,6 +896,7 @@ function sendComment(post) {
 }
 // update posts in group container
 function updatePosts(posts) {
+  console.log(posts)
   // sort posts
   const sortedPosts = sortJsonObjects(posts)
   // remove posts
