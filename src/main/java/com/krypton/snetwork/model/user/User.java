@@ -1,10 +1,10 @@
 package com.krypton.snetwork.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.common.EntityType;
 import com.krypton.snetwork.model.group.Group;
-import com.krypton.snetwork.model.group.Post;
+import com.krypton.snetwork.model.common.Post;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,8 +22,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+    @Column(nullable = false)
+    private String name;
+
+    @Column
+    private String surname;    
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -60,13 +63,13 @@ public class User {
     public User() {}
 
     public User(
-        String username,
+        String name,
         String email,
         String password,
         Image profilePhoto,
         Image backgroundPhoto
     ){
-        this.username        = username;
+        this.name            = name;
         this.email           = email;
         this.password        = password;
         this.profilePhoto    = profilePhoto;
@@ -77,8 +80,9 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "id="                + id +
-                ", username='"       + username + '\'' +
+                "id="                + id   +
+                ", name='"           + name     + '\'' +
+                ", surname='"        + surname  + '\'' +
                 ", email='"          + email    + '\'' +
                 ", password='"       + password + '\'' +
                 ", type="            + type +
