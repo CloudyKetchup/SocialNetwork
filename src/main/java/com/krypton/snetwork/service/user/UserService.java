@@ -1,47 +1,47 @@
 package com.krypton.snetwork.service.user;
 
-import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.user.User;
 
 public interface UserService {
 
 	/**
-	 * check if email already exist in database
-	 * @param email 	user email
+	 * check if {@link User} with given email exist
+	 * @param email 	{@link User} email
 	 * @return boolean
 	 */
 	boolean userExist(String email);
 	/**
 	 * add {@link Group} to {@link User} groups list
-	 * @param group  	group entity
-	 * @param user 		user entity
+	 * @param group  	{@link Group}
+	 * @param user 		{@link User}
 	 */
 	void addGroupToUser(Group group, User user);
 	/**
-	 * get {@link User} from database by email
-	 * @param  email 	user email
-	 * @return User entity
+	 * get {@link User} by email
+	 * @param  email 	{@link User} email
+	 * @return {@link User}
 	 */
 	User getUser(String email);
 	/**
-	 * get {@link User} from database by id
-	 * @param  id 		user id
-	 * @return User entity
+	 * get {@link User} by id
+	 * @param  id 		{@link User} id
+	 * @return {@link User}
 	 */
 	User getUser(Long id);
 	/**
-	 * find {@link User} in database by name
-	 * @param username	{@link User} name
-	 * @return {@link User} from database 
+	 * find {@link User} by name
+	 * @param name    {@link User} name
+	 * @return {@link User}
 	 */
-	User searchUser(String username);
+	User getUserByName(String name);
 	/**
 	 * save new {@link User} to database
-	 * @param username
+	 * @param name
 	 * @param email
 	 * @param password
-	 * @param image 	// user avatar bytes
+	 * @param profilePicture
 	 */
-	void saveUser(String username, String email, String password, Image image);
+	void saveUser(String name, String email, String password, Image profilePicture);
 }

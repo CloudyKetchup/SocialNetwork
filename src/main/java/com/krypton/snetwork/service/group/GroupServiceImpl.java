@@ -1,13 +1,17 @@
 package com.krypton.snetwork.service.group;
 
-import com.krypton.snetwork.model.Image;
 import com.krypton.snetwork.model.group.Group;
+import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.repository.GroupRepository;
+import com.krypton.snetwork.repository.UserRepository;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Optional;
 
 @Service
 public class GroupServiceImpl implements GroupService {
@@ -19,6 +23,9 @@ public class GroupServiceImpl implements GroupService {
 	private UserServiceImpl userService;
 
 	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
 	private ImageServiceImpl imageService;
 	
 	@Override
@@ -27,28 +34,20 @@ public class GroupServiceImpl implements GroupService {
 	}
 	
 	@Override
-	public void insertGroup(String name, String email) {
-		// get admin entity from database
-		User admin  	 = userService.getUser(email);
-		// get group photo entity from database
-		Image image 	 = imageService.getImage(name);
-		// get group background entity bytes from database 
-		Image background = imageService.getBackground(name);
-		// create group entity and return as object
-		Group group 	 = createGroup(name, admin, image, background);
-		// save new group entity to admin
-		saveGroupMember(group, admin);
-		// save admin entity to group
-		userService.addGroupToUser(group, admin);
+	public Group createGroup(String name, String adminEmail) {
+		User admin  = userService.getUser(adminEmail);
+		Group group = new Group(name, admin);
+		
+		admin.getGroups().add(group);
+
+		groupRepository.save(group);
+		userRepository.save(admin);
+
+		return group;
 	}
 
 	@Override
-	public Group createGroup(String name, User admin, Image image, Image background) {
-		return new Group(name, admin, image, background);
-	}
-	
-	@Override
-	public void saveGroupMember(Group group, User member) {
+	public void addFollower(Group group, User member) {
 		group.getFollowers().add(member);
 		groupRepository.save(group);
 	}
@@ -60,6 +59,32 @@ public class GroupServiceImpl implements GroupService {
 	
 	@Override
 	public Group getGroup(Long id) {
-		return groupRepository.findById(id).get();
+		Optional<Group> group = groupRepository.findById(id);
+
+		assert group.isPresent();
+
+		return group.get();
+	}
+
+	@Override
+	public void saveProfileAndBackgroundPicture(Group group, MultipartFile profilePhoto, MultipartFile background) {
+		// save profile picture for group
+		imageService.insertProfilePicture(
+				group.getName(), profilePhoto
+		);
+		// save background picture for group
+		imageService.insertBackground(
+				group.getName(), background
+		);
+		// set group profile picture
+		group.setProfilePhoto(
+				imageService.getProfilePicture(group.getName())
+		);
+		// set group background picture
+		group.setBackgroundPhoto(
+				imageService.getBackground(group.getName())
+		);
+		// update group
+		groupRepository.save(group);
 	}
 }

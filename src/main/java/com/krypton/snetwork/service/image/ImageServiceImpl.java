@@ -1,6 +1,6 @@
 package com.krypton.snetwork.service.image;
 
-import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.repository.ImageRepository;
 import com.krypton.snetwork.service.common.Tools;
 import net.coobird.thumbnailator.Thumbnails;
@@ -25,86 +25,142 @@ public class ImageServiceImpl implements ImageService {
 	private Tools tools;
 
 	@Override
-	public void insertProfilePicture(String name, MultipartFile picture) {
-		try {
-			Image pictureEntity = createProfilePicture(name, picture);
-			// save picture to database
-			imageRepository.save(pictureEntity);
-		}catch (IOException e) {
-			e.printStackTrace();
-		}
+	public Image getImage(Long id) {
+		Optional<Image> image = imageRepository.findById(id);
+		// image must be present
+		assert  image.isPresent();
+
+		return image.get();
 	}
 
 	@Override
-	public void insertBackground(String name, MultipartFile background) {
-		try {
-			Image backgroundEntity = createBackground(name, background);
-			// save background to database
-			imageRepository.save(backgroundEntity);
-		}catch (IOException e) {
-			e.printStackTrace();
-		}
+	public Image getPostPicture(Long postId) {
+		return imageRepository.findByName("post-" + postId + "-picture");
 	}
 
 	@Override
-	public Image createProfilePicture(String name, MultipartFile image) throws IOException {
-		byte[] imageBytes;
+	public Image getProfilePicture(String name) {
+		return imageRepository.findByName(name + "-profile-picture");
+	}
 
-		if(profilePictureNeedResize(tools.multipartToFile(image))) {
-			imageBytes = resizeProfilePicture(tools.multipartToFile(image));
+	@Override
+	public Image getBackground(String name) {
+		return imageRepository.findByName(name + "-background-picture");
+	}
+
+	@Override
+	public void insertPostPicture(Long id, MultipartFile pictureMultipart) {
+		Image postPicture = null;
+		try {
+			 postPicture = createPostPicture(id, pictureMultipart);
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+		assert postPicture != null;
+
+		imageRepository.save(postPicture);
+	}
+
+	@Override
+	public void insertProfilePicture(String name, MultipartFile pictureMultipart) {
+		Image profilePicture = null;
+		try {
+			profilePicture = createProfilePicture(name, pictureMultipart);
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+		assert profilePicture != null;
+
+		imageRepository.save(profilePicture);
+	}
+
+	@Override
+	public void insertBackground(String name, MultipartFile backgroundMultipart) {
+		Image background = null;
+		try {
+			background = createBackground(name, backgroundMultipart);
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+		assert background != null;
+
+		imageRepository.save(background);
+	}
+
+	@Override
+	public Image createPostPicture(Long id, MultipartFile pictureMultipart) throws IOException{
+		var width  = 560; 		// post picture max width
+		var height = 400;		// post picture max height
+
+		byte[] pictureBytes;
+
+		File pictureFile = tools.multipartToFile(pictureMultipart);
+
+		if(pictureNeedResize(pictureFile, width, height)) {
+			pictureBytes = resizePicture(pictureFile, width, height);
 		}else {
-			imageBytes = image.getBytes();
+			pictureBytes = pictureMultipart.getBytes();
 		}
-		assert imageBytes != null;
+		assert pictureBytes != null;
 
 		return new Image(
-			name + "-photo",
-			image.getContentType(),
-			imageBytes
+				"post-" + id + "-picture",
+				pictureMultipart.getContentType(),
+				pictureBytes
+		);
+	}
+
+	@Override
+	public Image createProfilePicture(String name, MultipartFile pictureMultipart) throws IOException {
+		var width  = 500; 		// profile picture max width
+		var height = 500;		// profile picture max height 
+
+		byte[] pictureBytes;
+
+		File pictureFile = tools.multipartToFile(pictureMultipart);
+
+		if(pictureNeedResize(pictureFile, width, height)) {
+			pictureBytes = resizePicture(pictureFile, width, height);
+		}else {
+			pictureBytes = pictureMultipart.getBytes();
+		}
+		assert pictureBytes != null;
+
+		return new Image(
+				name + "-profile-picture",
+				pictureMultipart.getContentType(),
+				pictureBytes
 		);
 	}
 
 	@Override
 	public Image createBackground(String name, MultipartFile background) throws IOException {
+		var width  = 1280; 		// background max width
+		var height = 720;		// background max height
+
 		byte[] backgroundBytes;
 
-		if (backgroundNeedResize(tools.multipartToFile(background))) {
-			backgroundBytes = resizeBackground(tools.multipartToFile(background));
+		File pictureFile = tools.multipartToFile(background);
+
+		if (pictureNeedResize(pictureFile, width, height)) {
+
+			backgroundBytes = resizePicture(pictureFile, width, height);
 		}else {
 			backgroundBytes = background.getBytes();
 		}
 		assert backgroundBytes != null;
 
 		return new Image(
-			name + "-background",
-			background.getContentType(),
-			backgroundBytes
+				name + "-background-picture",
+				background.getContentType(),
+				backgroundBytes
 		); 
 	}
 
 	@Override
-	public Image getBackground(String name) {
-		return imageRepository.findByName(name + "-background");	
-	}
-
-	@Override
-	public Image getImage(String name) {
-		return imageRepository.findByName(name + "-photo");
-	}
-	
-	@Override
-	public Image getImage(Long id) {
-		Optional<Image> image = imageRepository.findById(id);
-		// image must be present
-		assert image.isPresent();
-
-		return image.get();
-	}
-
-	@Override
-	public byte[] resizeProfilePicture(File picture) throws IOException {
+	public byte[] resizePicture(File picture, int width , int height) throws IOException {
 		// resize picture to given width and height
-		BufferedImage updatedPicture = Thumbnails.of(picture).size(500, 500).asBufferedImage();
+		BufferedImage updatedPicture = Thumbnails.of(picture).size(width, height).asBufferedImage();
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -114,40 +170,15 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
-	public byte[] resizeBackground(File background) throws IOException {
-		// resize background to given width and height
-		BufferedImage updatedBackground = Thumbnails.of(background).size(1280,720).asBufferedImage();
-
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-		ImageIO.write(updatedBackground, "jpg", outputStream);
-
-		return outputStream.toByteArray();
-	}
-
-	@Override
-	public boolean profilePictureNeedResize(File image) {
+	public boolean pictureNeedResize(File picture, int width, int height) {
 		BufferedImage bufferedImage = null;
 		try {
-			bufferedImage = ImageIO.read(image);
+			bufferedImage = ImageIO.read(picture);
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
 		assert bufferedImage != null;
- 
-		return bufferedImage.getWidth() > 500 && bufferedImage.getHeight() > 500;
-	}
 
-	@Override
-	public boolean backgroundNeedResize(File background) {
-		BufferedImage bufferedBackground = null;
-		try {
-			bufferedBackground = ImageIO.read(background);
-		}catch (IOException e) {
-			e.printStackTrace();
-		}
-		assert bufferedBackground != null;
-
-		return bufferedBackground.getWidth() > 1280 && bufferedBackground.getHeight() > 720;
+		return bufferedImage.getWidth() > width && bufferedImage.getHeight() > height;
 	}
 }

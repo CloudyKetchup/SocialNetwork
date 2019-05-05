@@ -1,7 +1,7 @@
 package com.krypton.snetwork.model.group;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.common.EntityType;
 import com.krypton.snetwork.model.user.User;
 import lombok.Getter;

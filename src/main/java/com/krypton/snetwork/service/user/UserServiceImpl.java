@@ -1,6 +1,6 @@
 package com.krypton.snetwork.service.user;
 
-import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.repository.UserRepository;
@@ -37,13 +37,13 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User searchUser(String username) {
-		return userRepository.findByName(username);
+	public User getUserByName(String name) {
+		return userRepository.findByName(name);
 	}
 
 	@Override
-	public void saveUser(String username, String email, String password, Image image) {
+	public void saveUser(String name, String email, String password, Image profilePicture) {
 		// save user to database
-		userRepository.save(new User(username,email,password,image,null));
+		userRepository.save(new User(name,email,password,profilePicture,null));
 	}
 }

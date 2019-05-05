@@ -1,43 +1,43 @@
 package com.krypton.snetwork.service.group;
 
-import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.user.User;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface GroupService {
 
 	/**
-	 * check if group with given name already exist in database 
-	 * @param name 		group name
+	 * check if {@link Group} with given name already exist in database 
+	 * @param name 		{@link Group} name
 	 */
-	public boolean groupExist(String name);
+	boolean groupExist(String name);
 	/**
-	 * save new group entity to database with admin
-	 * @param name 		group name
-	 * @param email 	admin email
+	 * save new {@link Group} to database
+	 * @param name 			{@link Group} name
+	 * @param adminEmail 	admin email
 	 */
-	public void insertGroup(String name, String email);
+	Group createGroup(String name, String adminEmail);
 	/**
-	 * create group entity with admin entity and avatar bytes
-	 * @param name 		group name
-	 * @param admin 	admin email
-	 * @param image 	group avatar bytes
+	 * add new follower to {@link Group} members list
+	 * @param group 	{@link Group}
+	 * @param member 	{@link User} to be added to {@link Group}
 	 */
-	public Group createGroup(String name, User admin, Image image, Image background);
+	void addFollower(Group group, User member);
 	/**
-	 * add new member to group members list
-	 * @param group 	group entity
-	 * @param member 	member to be added to group
+	 * get {@link Group} by name
+	 * @param name 		{@link Group} name
 	 */
-	public void saveGroupMember(Group group, User member);
+	Group getGroup(String name);
 	/**
-	 * get group entity by name
-	 * @param name 		group name
+	 * get {@link Group} by id
+	 * @param id 		{@link Group} id
 	 */
-	public Group getGroup(String name);
+	Group getGroup(Long id);
 	/**
-	 * get group entity by id
-	 * @param id 		group id
+	 * set {@link Group} profile and background {@link Image}
+	 * @param group 	{@link Group}
+	 * @param
 	 */
-	public Group getGroup(Long id);
+	void saveProfileAndBackgroundPicture(Group group, MultipartFile profilePhoto, MultipartFile background);
 }

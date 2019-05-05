@@ -1,10 +1,10 @@
 package com.krypton.snetwork.service.post;
 
-import com.krypton.snetwork.model.Image;
+import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.common.EntityType;
 import com.krypton.snetwork.model.group.Comment;
 import com.krypton.snetwork.model.group.Group;
-import com.krypton.snetwork.model.group.Post;
+import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.repository.GroupRepository;
 import com.krypton.snetwork.repository.PostRepository;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -38,7 +39,6 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private UserRepository userRepository;
-
 
     @Override
     public void newGroupPost(String content, Long author, Long group, Long time) {
@@ -62,9 +62,9 @@ public class PostServiceImpl implements PostService {
         // add new post to user
         user.getPosts().add(
                 new Post(
-                        content,    // post text
-                        user,       // post author
-                        time,       // time when post was created
+                        content,                        // post text
+                        user,                           // post author
+                        time,                           // time when post was created
                         EntityType.USER
                 )
         );
@@ -74,17 +74,20 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post getPost(Long id) {
-        return postRepository.findById(id).get();
+        Optional<Post> post = postRepository.findById(id);
+
+        assert  post.isPresent();
+
+        return post.get();
     }
 
     @Override
-    public void addPostPicture(MultipartFile postPhoto, HashMap<String, String> postData) {
-        // insert picture to database
-        imageService.insertProfilePicture(postData.get("id") + "-post",postPhoto);
-        // picture for post inserted in database
-        Image insertedPicture = imageService.getImage(postData.get("id") + "-post");
+    public void addPostPicture(MultipartFile postPhoto, Long postId) {
+        imageService.insertPostPicture(postId,postPhoto);
+
+        Image insertedPicture = imageService.getPostPicture(postId);
         // add picture to post
-        addPicture(Long.valueOf(postData.get("id")),insertedPicture);
+        addPicture(postId,insertedPicture);
     }
 
     @Override
