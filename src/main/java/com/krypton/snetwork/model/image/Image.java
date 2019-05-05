@@ -1,4 +1,4 @@
-package com.krypton.snetwork.model;
+package com.krypton.snetwork.model.image;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
