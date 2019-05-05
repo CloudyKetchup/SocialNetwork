@@ -1,42 +1,35 @@
 package com.krypton.snetwork.controllers;
 
+import com.krypton.snetwork.model.group.*;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.service.user.UserServiceImpl;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
+
+import java.util.LinkedList;
 
 @RestController
+@RequestMapping("/user")
 public class UserController {
 
     @Autowired
     private UserServiceImpl userService;
     /**
-     * post request for getting user groups list
-     * @param request 	user account data
-     * @return user groups entities
+     * get {@link User} {@link Group}'s list
+     * @param email     {@link User} email
+     * @return {@link Group}'s list
      */
-    @PostMapping("/user_groups")
-    public HashMap<String, Object> userGroups(@RequestBody HashMap<String, String> request) {
-        return new HashMap<>(){{
-            put("groups",userService.getUser(request.get("email")).getGroups());
-        }};
+    @GetMapping("/groups/{email:.+}")
+    public LinkedList<Group> userGroups(@PathVariable("email") String email) {
+        return new LinkedList<>(userService.getUser(email).getGroups());
     }
     /**
-     * get member profile image
-     * @param request 	member email
-     * @return member profile image in base64 format
+     * get {@link User} by name 
+     * @param name      {@link User} name
+     * @return {@link User} entity
      */
-    @PostMapping("/user_image")
-    public byte[] memberImage(@RequestBody HashMap<String,String> request) {
-        User member   = userService.getUser(request.get("email"));
-        byte[] image  = member.getProfilePhoto().getBytes();
-
-        return Base64.encodeBase64(image);
-    }
-    @GetMapping("/search/user/{username:.+}")
-    public User searchUser(@PathVariable("username") String username) {
-        return userService.searchUser(username);
+    @GetMapping("/name={name:.+}")
+    public User getUser(@PathVariable("name") String name) {
+        return userService.getUserByName(name);
     }
 }
