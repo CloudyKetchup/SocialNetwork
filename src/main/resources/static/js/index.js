@@ -197,7 +197,7 @@ function newsFeed() {
         .attr('class','feed')
         .append(
           // new post input and submit
-          newPostContainer("User",getUser()['id'])
+          newPostContainer("User")
             .css({
               'top': '0px',
               'width': '100%',
@@ -217,17 +217,11 @@ function newsFeed() {
 function getFeedPosts() {
   $.ajax({
     type : 'GET',
-    url : 'http://localhost:8080/feed_posts/' + getUser()['id'],
+    url : 'http://localhost:8080/user/feed/' + getUser()['id'],
     success : (result) => {
-      feedPosts = $.extend(true, {}, result)
-      renderFeedPosts(result)
+      appendPosts(result)
     }
   })
-}
-// render all posts in feed
-function renderFeedPosts(posts) {
-  $('.posts').empty()
-  appendPosts(posts)
 }
 /* json from ajax give objects in random
   so we sort them by id */
@@ -434,7 +428,7 @@ function renderGroupContainer() {
             // group follow button
             groupFollow(),
             // container with new post input/submit
-            newPostContainer("Group",groupData['id']),
+            newPostContainer("Group"),
             $('<p/>')
               .html(groupData['followers'].length + '  Followers'),
             // container storing group images
@@ -471,7 +465,7 @@ function groupContainerClose() {
       )
 }
 // new post container
-function newPostContainer(postType,parent_id) {
+function newPostContainer(postType) {
   return $('<div/>')
     .attr('class','new-post')
     // add elements to new post container
@@ -505,16 +499,17 @@ function newPostContainer(postType,parent_id) {
           $('<i/>')
             .attr('class','fa fa-paper-plane')
         )
-        .click(() => sendNewPost(postType,parent_id))
+        .click(() => sendNewPost(postType))
     ])
 }
 // send new post to group or user wall
-function sendNewPost(postType,parent_id) {
+function sendNewPost(postType) {
   const postPicture = $('.choose-post-picture').prop('files')[0]
+  const parent = feedOpened ? getUser()['id'] : groupData['id']
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
-    url : 'http://localhost:8080/new_post',
+    url : 'http://localhost:8080/post/new',
     data : JSON.stringify({
       // post text
       'content' : $('.new-post-input').val(),
@@ -523,27 +518,14 @@ function sendNewPost(postType,parent_id) {
       // time when post is created
       'time' : new Date().getTime(),
       // id of entity where to send post group or user
-      'for' : parent_id,
+      'for' : parent,
       // group or user post
       'post_type' : postType
     }),
     success : (result) => {
       // empty post input
       $('.new-post-input').val('')
-      // check if post have picture
-      if (postPicture !== undefined) {
-        sendPostPicture(result,postPicture)
-      }else {
-        // check if post was send to user or group
-        if (result['type'] === "User") {
-          // update feed posts
-          getFeedPosts()
-        }else {
-          // update group data
-          getGroupData(groupData)
-          updatePosts(groupData['posts'])
-        }
-      }
+      sendPostPicture(result,postPicture)
     }
   })
 }
@@ -556,18 +538,18 @@ function sendPostPicture(post,postPicture) {
   formData.append('post',post['id'])
   $.ajax({
     type : 'POST',
-    url : 'http://localhost:8080/add_post_picture',
+    url : 'http://localhost:8080/post/add/picture',
     contentType : false,
     processData : false,
     data : formData,
     success : (result) => {
-      if (post['type'] === "User") {
+      if (feedOpened) {
         // update feed posts
         getFeedPosts()
       }else {
         // update group data
         getGroupData(groupData)
-        updatePosts(groupData['posts'])
+        appendPosts(groupData['posts'])
       }
     }
   })
@@ -643,7 +625,7 @@ function getPostAuthor(post_id) {
   let author
   $.ajax({
     type : 'GET',
-    url : 'http://localhost:8080/post_author/' + post_id,
+    url : 'http://localhost:8080/post/author/' + post_id,
     async : false,
     success : (result) => {
       author = result
@@ -653,6 +635,7 @@ function getPostAuthor(post_id) {
 }
 // add all posts to posts container
 function appendPosts(posts) {
+  $('.posts').empty()
   // sort posts
   const sortedPosts = sortJsonObjects(posts)
   // append to container all posts
@@ -768,13 +751,13 @@ function likeButton(post) {
       // change button color to red
       .css('color','#F44256')
       // on tap will remove user like
-      .click(() => sendLike(post,'remove_like'))
+      .click(() => sendLike(post,'remove/like'))
   }else {
     likeButton
       // change color to grey
       .css('color','grey')
       // on tap will add user like
-      .click(() => sendLike(post,'add_like'))
+      .click(() => sendLike(post,'add/like'))
   }
   return likeButton
 }
@@ -783,7 +766,7 @@ function sendLike(post,action) {
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
-    url : 'http://localhost:8080/' + action,
+    url : 'http://localhost:8080/post/' + action,
     data : JSON.stringify({
       'post_id'   : post['id'],
       'author_id' : getUser()['id']
@@ -794,7 +777,7 @@ function sendLike(post,action) {
         getFeedPosts()
       }else if (groupOpened){
         getGroupData(groupData)
-        updatePosts()
+        appendPosts(groupData['posts'])
       }
     }
   })
@@ -882,7 +865,7 @@ function sendComment(post) {
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
-    url : 'http://localhost:8080/new_comment',
+    url : 'http://localhost:8080/post/add/comment',
     data : JSON.stringify({
       'post_id' : post['id'],
       'content' : $('.comment-input').val(),
@@ -893,19 +876,6 @@ function sendComment(post) {
       updateComments(result)
     }
   })
-}
-// update posts in group container
-function updatePosts(posts) {
-  console.log(posts)
-  // sort posts
-  const sortedPosts = sortJsonObjects(posts)
-  // remove posts
-  $('.posts').empty()
-  // append to container new posts
-  for (i in sortedPosts) {
-    // append post div
-    $('.posts').append(postDiv(sortedPosts[i]))
-  }
 }
 // update post comments
 function updateComments(post) {
