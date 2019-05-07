@@ -1,5 +1,6 @@
 package com.krypton.snetwork.controllers;
 
+import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.group.*;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.service.user.UserServiceImpl;
@@ -13,7 +14,24 @@ import java.util.LinkedList;
 public class UserController {
 
     @Autowired
-    private UserServiceImpl userService;
+    private UserServiceImpl userService;    
+    /**
+     * get {@link User} feed {@link Post}'s,from groups and users who this user follows
+     * @param id            user id
+     * @return list of posts entities
+     */
+    @GetMapping("/feed/{id:.+}")
+    public LinkedList<Post> feedPosts(@PathVariable("id") Long id) {
+        // account requesting feed posts
+        User user = userService.getUser(id);
+
+        LinkedList<Post> feedPosts = new LinkedList<>(user.getPosts());
+        // all posts from groups user follows
+        for (Group group : user.getGroups()) {
+            feedPosts.addAll(group.getPosts());
+        }
+        return feedPosts;
+    }
     /**
      * get {@link User} {@link Group}'s list
      * @param email     {@link User} email
