@@ -4,10 +4,9 @@ import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.group.Group;
+import com.krypton.snetwork.model.common.EntityType;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -18,10 +17,10 @@ public interface ImageService {
 	 */
 	Image getImage(Long id);
 	/**
-	 * @param postId	{@link Post} id
+	 * @param post		{@link Post}
 	 * @return {@link Image}
 	 */
-	 Image getPostPicture(Long postId);
+	 Image getPostPicture(Post post);
 	/**
 	 * get profile picture for {@link User} or {@link Group}
 	 * @param name 		{@link User} or {@link Group} name
@@ -36,10 +35,10 @@ public interface ImageService {
 	Image getBackground(String name);
 	/**
 	 * save {@link Image} for {@link Post}
-	 * @param id 				{@link Post} id
+	 * @param post 				{@link Post}
 	 * @param pictureMultipart	{@link Post} picture
 	 */
-	void insertPostPicture(Long id, MultipartFile pictureMultipart);
+	void insertPostPicture(Post post, MultipartFile pictureMultipart);
 	/**
 	 * save profile {@link Image} for {@link User} or {@link Group}
 	 * @param name 					{@link Image} name
@@ -54,12 +53,12 @@ public interface ImageService {
 	void insertBackground(String name, MultipartFile backgroundMultipart);
 	/**
 	 * create {@link Image} for {@link Post} picture
-	 * @param id 		{@link Post} id
+	 * @param post 		{@link Post} to witch create picture
 	 * @param picture  	picture from request
 	 * @throws IOException
 	 * @return {@link Image}
 	 */
-	Image createPostPicture(Long id, MultipartFile picture) throws IOException;
+	Image createPostPicture(Post post, MultipartFile picture) throws IOException;
 	/** 
 	 * create {@link Image} for {@link User} or {@link Group} profile picture
 	 * @param name 		{@link User} or {@link Group} name

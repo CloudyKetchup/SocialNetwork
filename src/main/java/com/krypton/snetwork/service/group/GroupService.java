@@ -1,5 +1,6 @@
 package com.krypton.snetwork.service.group;
 
+import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.user.User;
@@ -24,7 +25,10 @@ public interface GroupService {
 	 * @param member 	{@link User} to be added to {@link Group}
 	 */
 	void addFollower(Group group, User member);
-	/**
+
+    void addPost(Long author, Post post);
+
+    /**
 	 * get {@link Group} by name
 	 * @param name 		{@link Group} name
 	 */

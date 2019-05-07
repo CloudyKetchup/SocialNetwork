@@ -1,11 +1,14 @@
 package com.krypton.snetwork.service.user;
 
+import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -27,13 +30,25 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public void addPost(Long author, Post post) {
+		User user = getUser(author);
+		user.getPosts().add(post);
+		// update user with post
+		userRepository.save(user);
+	}
+
+	@Override
 	public User getUser(String email) {
 		return userRepository.findByEmail(email);
 	}
 
 	@Override
 	public User getUser(Long id) {
-		return userRepository.findById(id).get();
+		Optional<User> user = userRepository.findById(id);
+
+		assert user.isPresent();
+
+		return user.get();
 	}
 
 	@Override

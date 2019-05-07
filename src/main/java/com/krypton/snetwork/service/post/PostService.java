@@ -3,26 +3,14 @@ package com.krypton.snetwork.service.post;
 import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.group.Comment;
 import com.krypton.snetwork.model.common.Post;
+import com.krypton.snetwork.model.user.User;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 
 public interface PostService {
-    /**
-     * add new {@link Post} to {@link Group} wall
-     * @param content 	{@link Post} text
-     * @param author 	{@link Post} author
-     * @param time 		time {@link Post} was created
-     * @param group 	{@link Group} id
-     */
-    void newGroupPost(String content, Long author, Long group, Long time);
-    /**
-     * add new {@link Post} to user wall
-     * @param content 	{@link Post} text
-     * @param author 	{@link Post} author
-     * @param time 		when {@link Post} was created
-     */
-    void newUserPost(String content, Long author, Long time);
+
+    Post createPost(String content, User author, Long time);
     /**
      * get {@link Post} from database
      * @param id 		{@link Post} id

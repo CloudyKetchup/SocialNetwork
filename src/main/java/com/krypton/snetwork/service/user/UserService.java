@@ -1,5 +1,6 @@
 package com.krypton.snetwork.service.user;
 
+import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.user.User;
@@ -18,6 +19,9 @@ public interface UserService {
 	 * @param user 		{@link User}
 	 */
 	void addGroupToUser(Group group, User user);
+
+	void addPost(Long author, Post post);
+
 	/**
 	 * get {@link User} by email
 	 * @param  email 	{@link User} email

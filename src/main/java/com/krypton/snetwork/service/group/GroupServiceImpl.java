@@ -1,7 +1,7 @@
 package com.krypton.snetwork.service.group;
 
+import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.group.Group;
-import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.repository.GroupRepository;
 import com.krypton.snetwork.repository.UserRepository;
@@ -49,6 +49,14 @@ public class GroupServiceImpl implements GroupService {
 	@Override
 	public void addFollower(Group group, User member) {
 		group.getFollowers().add(member);
+		groupRepository.save(group);
+	}
+
+	@Override
+	public void addPost(Long groupId, Post post) {
+		Group group = getGroup(groupId);
+		group.getPosts().add(post);
+		// update user with post
 		groupRepository.save(group);
 	}
 	

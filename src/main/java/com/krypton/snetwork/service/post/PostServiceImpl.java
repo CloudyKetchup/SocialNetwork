@@ -26,56 +26,16 @@ public class PostServiceImpl implements PostService {
     private PostRepository postRepository;
 
     @Autowired
-    private GroupService groupService;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
     private ImageServiceImpl imageService;
 
-    @Autowired
-    private GroupRepository groupRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
     @Override
-    public void newGroupPost(String content, Long author, Long group, Long time) {
-        Group groupEntity = groupService.getGroup(group);
-        // add new post to group
-        groupEntity.getPosts().add(
-                new Post(
-                        content,                        // post text
-                        userService.getUser(author),    // post author
-                        time,                           // time when post was created
-                        EntityType.GROUP
-                )
-        );
-        // update group with new post
-        groupRepository.save(groupEntity);
-    }
-
-    @Override
-    public void newUserPost(String content, Long author, Long time) {
-        User user = userService.getUser(author);
-        // add new post to user
-        user.getPosts().add(
-                new Post(
-                        content,                        // post text
-                        user,                           // post author
-                        time,                           // time when post was created
-                        EntityType.USER
-                )
-        );
-        // update user with new post
-        userRepository.save(user);
+    public Post createPost(String content, User author, Long time) {
+        return new Post(content, author, time, EntityType.USER);
     }
 
     @Override
     public Post getPost(Long id) {
         Optional<Post> post = postRepository.findById(id);
-
         assert  post.isPresent();
 
         return post.get();
@@ -83,9 +43,10 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void addPostPicture(MultipartFile postPhoto, Long postId) {
-        imageService.insertPostPicture(postId,postPhoto);
+        Post post = getPost(postId);
+        imageService.insertPostPicture(post, postPhoto);
 
-        Image insertedPicture = imageService.getPostPicture(postId);
+        Image insertedPicture = imageService.getPostPicture(post);
         // add picture to post
         addPicture(postId,insertedPicture);
     }

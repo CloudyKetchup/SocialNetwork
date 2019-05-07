@@ -1,8 +1,10 @@
 package com.krypton.snetwork.service.image;
 
+import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.repository.ImageRepository;
 import com.krypton.snetwork.service.common.Tools;
+import net.coobird.thumbnailator.Thumbnailator;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,8 +36,8 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
-	public Image getPostPicture(Long postId) {
-		return imageRepository.findByName("post-" + postId + "-picture");
+	public Image getPostPicture(Post post) {
+		return imageRepository.findByName(post.getType() + "-post-" + post.getId()+ "-picture");
 	}
 
 	@Override
@@ -49,10 +51,10 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
-	public void insertPostPicture(Long id, MultipartFile pictureMultipart) {
+	public void insertPostPicture(Post post, MultipartFile pictureMultipart) {
 		Image postPicture = null;
 		try {
-			 postPicture = createPostPicture(id, pictureMultipart);
+			 postPicture = createPostPicture(post, pictureMultipart);
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -88,7 +90,7 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
-	public Image createPostPicture(Long id, MultipartFile pictureMultipart) throws IOException{
+	public Image createPostPicture(Post post, MultipartFile pictureMultipart) throws IOException{
 		var width  = 560; 		// post picture max width
 		var height = 400;		// post picture max height
 
@@ -104,7 +106,7 @@ public class ImageServiceImpl implements ImageService {
 		assert pictureBytes != null;
 
 		return new Image(
-				"post-" + id + "-picture",
+				post.getType() + "-post-" + post.getId() + "-picture",
 				pictureMultipart.getContentType(),
 				pictureBytes
 		);
@@ -113,7 +115,7 @@ public class ImageServiceImpl implements ImageService {
 	@Override
 	public Image createProfilePicture(String name, MultipartFile pictureMultipart) throws IOException {
 		var width  = 500; 		// profile picture max width
-		var height = 500;		// profile picture max height 
+		var height = 500;		// profile picture max height
 
 		byte[] pictureBytes;
 
@@ -160,7 +162,7 @@ public class ImageServiceImpl implements ImageService {
 	@Override
 	public byte[] resizePicture(File picture, int width , int height) throws IOException {
 		// resize picture to given width and height
-		BufferedImage updatedPicture = Thumbnails.of(picture).size(width, height).asBufferedImage();
+		BufferedImage updatedPicture = Thumbnails.of(picture).forceSize(width, height).asBufferedImage();
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
