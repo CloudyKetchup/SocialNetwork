@@ -51,7 +51,7 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
-	public void insertPostPicture(Post post, MultipartFile pictureMultipart) {
+	public Image insertPostPicture(Post post, MultipartFile pictureMultipart) {
 		Image postPicture = null;
 		try {
 			 postPicture = createPostPicture(post, pictureMultipart);
@@ -60,11 +60,11 @@ public class ImageServiceImpl implements ImageService {
 		}
 		assert postPicture != null;
 
-		imageRepository.save(postPicture);
+		return imageRepository.save(postPicture);
 	}
 
 	@Override
-	public void insertProfilePicture(String name, MultipartFile pictureMultipart) {
+	public Image insertProfilePicture(String name, MultipartFile pictureMultipart) {
 		Image profilePicture = null;
 		try {
 			profilePicture = createProfilePicture(name, pictureMultipart);
@@ -73,11 +73,11 @@ public class ImageServiceImpl implements ImageService {
 		}
 		assert profilePicture != null;
 
-		imageRepository.save(profilePicture);
+		return imageRepository.save(profilePicture);
 	}
 
 	@Override
-	public void insertBackground(String name, MultipartFile backgroundMultipart) {
+	public Image insertBackground(String name, MultipartFile backgroundMultipart) {
 		Image background = null;
 		try {
 			background = createBackground(name, backgroundMultipart);
@@ -86,7 +86,7 @@ public class ImageServiceImpl implements ImageService {
 		}
 		assert background != null;
 
-		imageRepository.save(background);
+		return imageRepository.save(background);
 	}
 
 	@Override

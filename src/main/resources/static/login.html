@@ -6,14 +6,22 @@
 </head>
 <body>
 	<div class="main-container">
-		<span>Login</span>
-		<div id="form">
-			<input placeholder="Email" type="email" id="login-email">
-			<input placeholder="Password" type="password" id="login-password">
+		<div class="main-container-header">
+			<img class="profile-background" src="/images/choose-background.jpg">
 		</div>
-		<button id="submit-login" onclick="loginTrigger()">Login</button>
-	</div>	
+		<div class="form-container">
+			<div class="form" style="width: 50%;">
+				<input placeholder="Email" type="email" class="email-field">
+				<input placeholder="Password" type="password" class="password-field">
+				<div style="margin: auto; width: 20%;">
+					<button id="submit-register" onclick="registerTrigger()" style="margin-top: 40px;">Login</button>
+					<a id="login" href="/register">Register?</a>
+				</div>
+			</div>
+		</div>
+	</div>
 </body>
+<script type="text/javascript" src="/js/auth.js"></script>
 <script type="text/javascript" src="/js/index.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>

@@ -19,9 +19,12 @@ public interface UserService {
 	 * @param user 		{@link User}
 	 */
 	void addGroupToUser(Group group, User user);
-
+	/**
+	 * add {@link Post} to {@link User} wall
+	 * @param author 	{@link User} id
+	 * @param post 		{@link Post} for wall
+	 */
 	void addPost(Long author, Post post);
-
 	/**
 	 * get {@link User} by email
 	 * @param  email 	{@link User} email
@@ -41,11 +44,27 @@ public interface UserService {
 	 */
 	User getUserByName(String name);
 	/**
-	 * save new {@link User} to database
+	 * save {@link User} to database
 	 * @param name
+	 * @param surname
 	 * @param email
 	 * @param password
 	 * @param profilePicture
+	 * @param backgroundPicture
 	 */
-	void saveUser(String name, String email, String password, Image profilePicture);
+	void saveUser(String name, String surname, String email, String password);
+	/**
+	 * get {@link User} from database and set profile pricture
+	 * with given {@link Image}
+	 * @param email			// {@link User} email
+	 * @param picture 		// {@link Image} for profile picture
+	 */
+	void setProfilePicture(String email, Image picture);
+	/**
+	 * get {@link User} from database and set background pricture
+	 * with given {@link Image}
+	 * @param email			// {@link User} email
+	 * @param background 	// {@link Image} for background
+	 */
+	void setBackgroundPicture(String email, Image background);
 }

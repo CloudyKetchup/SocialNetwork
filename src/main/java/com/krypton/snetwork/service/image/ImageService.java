@@ -37,20 +37,23 @@ public interface ImageService {
 	 * save {@link Image} for {@link Post}
 	 * @param post 				{@link Post}
 	 * @param pictureMultipart	{@link Post} picture
+	 * @return inserted {@link Image}
 	 */
-	void insertPostPicture(Post post, MultipartFile pictureMultipart);
+	Image insertPostPicture(Post post, MultipartFile pictureMultipart);
 	/**
 	 * save profile {@link Image} for {@link User} or {@link Group}
 	 * @param name 					{@link Image} name
 	 * @param pictureMultipart 		picture file from request
+	 * @return inserted {@link Image}
 	 */
-	void insertProfilePicture(String name, MultipartFile pictureMultipart);
+	Image insertProfilePicture(String name, MultipartFile pictureMultipart);
 	/**
 	 * save background {@link Image} for {@link User} or {@link Group}
 	 * @param name 		 		  	{@link Image} name
 	 * @param backgroundMultipart 	background from request
+	 * @return inserted {@link Image}
 	 */
-	void insertBackground(String name, MultipartFile backgroundMultipart);
+	Image insertBackground(String name, MultipartFile backgroundMultipart);
 	/**
 	 * create {@link Image} for {@link Post} picture
 	 * @param post 		{@link Post} to witch create picture

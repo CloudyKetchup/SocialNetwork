@@ -57,8 +57,25 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void saveUser(String name, String email, String password, Image profilePicture) {
-		// save user to database
-		userRepository.save(new User(name,email,password,profilePicture,null));
+	public void saveUser(String name, String surname, String email, String password) {
+		userRepository.save(new User(name, surname, email, password));
+	}
+
+	@Override
+	public void setProfilePicture(String email, Image picture) {
+		User user = getUser(email);
+
+		user.setProfilePicture(picture);
+
+		userRepository.save(user);
+	}
+
+	@Override
+	public void setBackgroundPicture(String email, Image background) {
+		User user = getUser(email);
+
+		user.setBackgroundPicture(background);
+
+		userRepository.save(user);	
 	}
 }

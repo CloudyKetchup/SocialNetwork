@@ -47,17 +47,19 @@ public class AuthController{
     /**
      * user login procedure
      * @param  formData 	user email and password
-     * @return response message or response message with user data
+     * @return response message,may contain {@link User} entity
      */
     @PostMapping("/login")
     @ResponseBody
     public HashMap<String, Object> login(@RequestBody HashMap<String, String> formData) {
         String email 	= formData.get("email");
         String password = formData.get("password");
-        // body for response
+
         HashMap<String, Object> response;
+        
         // get user from database
         User dbUser = userService.getUser(email);
+        
         if (dbUser != null) {
             // check if password is correct
             if (dbUser.getPassword().equals(password)) {
@@ -79,42 +81,25 @@ public class AuthController{
     }
     /**
      * user registration procedure
-     * @param image		user profile bytes
-     * @param data 		user name,email,password
+     * @param form      
      * @return message "account exist" or "registered"
      */
     @PostMapping("/register")
     @ResponseBody
-    public HashMap<String, String> register(
-            @RequestParam("image") MultipartFile image,
-            @RequestParam("data")  String data
-    ) {
-        // parsed json from request
-        HashMap<String, String> parsedData = tools.stringToHashMap(data);
-        // username from request
-        String username = parsedData.get("username");
-        // email from request
-        String email 	= parsedData.get("email");
-        // password from request
-        String password = parsedData.get("password");
+    public String register(@RequestBody HashMap<String, String> form) {
+        System.out.println(form);
+        String name     = form.get("name");
+        String surname  = form.get("surname");
+        String email 	= form.get("email");
+        String password = form.get("password");
+
         // check if email does already exist
         if (userService.userExist(email)) {
-            return new HashMap<>(){{
-                put("response","account exist");
-            }};
+            return "account exist";
         }else {
-            // insert user profile photo to database
-            imageService.insertProfilePicture(email,image);
-            // save user entity to database
-            userService.saveUser(
-                    username,
-                    email,
-                    password,
-                    imageService.getProfilePicture(email)
-            );
-            return new HashMap<>(){{
-                put("response","registered");
-            }};
+            // save user to database
+            userService.saveUser(name, surname, email, password);
+            return "registered";
         }
     }
 }

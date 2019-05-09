@@ -25,7 +25,7 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private String surname;    
 
     @Column(nullable = false, unique = true)
@@ -35,15 +35,15 @@ public class User {
     private String password;
 
     @Column
-    private EntityType type;
+    private EntityType type = EntityType.USER;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "image_id")
-    private Image profilePhoto;
+    private Image profilePicture;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "background_id")
-    private Image backgroundPhoto;
+    private Image backgroundPicture;
 
     @ManyToMany
     @JoinTable(
@@ -62,33 +62,25 @@ public class User {
 
     public User() {}
 
-    public User(
-        String name,
-        String email,
-        String password,
-        Image profilePhoto,
-        Image backgroundPhoto
-    ){
-        this.name            = name;
-        this.email           = email;
-        this.password        = password;
-        this.profilePhoto    = profilePhoto;
-        this.backgroundPhoto = backgroundPhoto;
-        this.type            = EntityType.USER;
+    public User(String name, String surname, String email, String password) {
+        this.name     = name;
+        this.surname  = surname;
+        this.email    = email;
+        this.password = password;
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "id="                + id   +
-                ", name='"           + name     + '\'' +
-                ", surname='"        + surname  + '\'' +
-                ", email='"          + email    + '\'' +
-                ", password='"       + password + '\'' +
-                ", type="            + type +
-                ", profilePhoto="    + profilePhoto +
-                ", backgroundPhoto=" + backgroundPhoto +
-                ", followers="       + followers +
+                "id="                   + id   +
+                ", name='"              + name     + '\'' +
+                ", surname='"           + surname  + '\'' +
+                ", email='"             + email    + '\'' +
+                ", password='"          + password + '\'' +
+                ", type="               + type +
+                ", profilePicture="     + profilePicture +
+                ", backgroundPicture="  + backgroundPicture +
+                ", followers="          + followers +
                 '}';
     }
 }
