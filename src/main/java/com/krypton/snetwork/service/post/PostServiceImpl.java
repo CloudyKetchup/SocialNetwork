@@ -3,30 +3,26 @@ package com.krypton.snetwork.service.post;
 import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.common.EntityType;
 import com.krypton.snetwork.model.group.Comment;
-import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.user.User;
-import com.krypton.snetwork.repository.GroupRepository;
 import com.krypton.snetwork.repository.PostRepository;
-import com.krypton.snetwork.repository.UserRepository;
-import com.krypton.snetwork.service.group.GroupService;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
-import com.krypton.snetwork.service.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.Optional;
 
 @Service
 public class PostServiceImpl implements PostService {
 
-    @Autowired
-    private PostRepository postRepository;
+    private final PostRepository postRepository;
 
-    @Autowired
-    private ImageServiceImpl imageService;
+    private final ImageServiceImpl imageService;
+
+    public PostServiceImpl(PostRepository postRepository, ImageServiceImpl imageService) {
+        this.postRepository = postRepository;
+        this.imageService = imageService;
+    }
 
     @Override
     public Post createPost(String content, User author, Long time) {

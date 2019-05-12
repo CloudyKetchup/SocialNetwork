@@ -1,25 +1,30 @@
 package com.krypton.snetwork.controllers;
 
 import com.krypton.snetwork.model.image.Image;
+import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/image")
+@RequestMapping("/images")
 public class ImageController {
 
-    @Autowired
-    private ImageServiceImpl imageService;
+    private final ImageServiceImpl imageService;
 
-    @Autowired
-    private UserServiceImpl userService;
-	/**
+    private final UserServiceImpl userService;
+
+    public ImageController(UserServiceImpl userService, ImageServiceImpl imageService) {
+        this.userService  = userService;
+        this.imageService = imageService;
+    }
+
+    /**
      * get {@link Image},will come on client side like resource
+     *
      * @param id 	    {@link Image} id
      * @return {@link Image} entity
      */
@@ -32,7 +37,8 @@ public class ImageController {
     }
     /**
      * set {@link User} profile picture
-     * @param profilePicture
+     *
+     * @param profilePicture    profile picture file
      * @param email             {@link User} email
      */
     @PostMapping("/add/user/profile-picture")
@@ -47,7 +53,8 @@ public class ImageController {
     }
     /**
      * set {@link User} background picture
-     * @param backgroundPicture
+     *
+     * @param backgroundPicture background picture file
      * @param email             {@link User} email
      */
     @PostMapping("/add/user/background-picture")

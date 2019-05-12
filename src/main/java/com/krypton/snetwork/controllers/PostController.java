@@ -9,7 +9,6 @@ import com.krypton.snetwork.service.group.GroupServiceImpl;
 import com.krypton.snetwork.service.post.PostServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
 import com.krypton.snetwork.repository.PostRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,19 +20,24 @@ import java.util.HashMap;
 @RequestMapping("/post")
 public class PostController {
 
-	@Autowired
-	private PostServiceImpl postService;
+	private final PostServiceImpl postService;
 
-	@Autowired
-	private UserServiceImpl userService;
+	private final UserServiceImpl userService;
 
-	@Autowired
-	private GroupServiceImpl groupService;
+	private final GroupServiceImpl groupService;
 
-	@Autowired
-	private PostRepository postRepository;
+	private final PostRepository postRepository;
+
+	public PostController(PostServiceImpl postService, UserServiceImpl userService, GroupServiceImpl groupService, PostRepository postRepository) {
+		this.postService 	= postService;
+		this.userService 	= userService;
+		this.groupService 	= groupService;
+		this.postRepository = postRepository;
+	}
+
 	/**
 	 * add new {@link Post} to {@link Group} or {@link User} wall
+	 *
 	 * @param request 		{@link Post} data
 	 * @return {@link Post} added to {@link User} or {@link Group}
 	 */
@@ -57,6 +61,7 @@ public class PostController {
 	}
 	/**
 	 * get {@link Post} author
+	 *
 	 * @param id 			{@link Post} id
 	 * @return {@link Post} author from database
 	 */
@@ -66,6 +71,7 @@ public class PostController {
 	}
 	/**
 	 * add picture to {@link Post}
+	 *
 	 * @param postPicture 	picture for {@link Post}
 	 * @param postId 		{@link Post} id
 	 */
@@ -79,6 +85,7 @@ public class PostController {
 	}
 	/**
 	 * get {@link Post} {@link Image},will come on client side like resource
+	 *
 	 * @param id 			{@link Post} id
 	 * @return {@link Post} picture
 	 */
@@ -90,6 +97,7 @@ public class PostController {
 	}
 	/**
 	 * add like to {@link Post}
+	 *
 	 * @param request 		{@link User} and {@link Post} id's
 	 */
 	@PostMapping("/add/like")
@@ -101,6 +109,7 @@ public class PostController {
 	}
 	/**
 	 * remove like from {@link Post}
+	 *
 	 * @param request 		{@link User} and {@link Post} id's
 	 */
 	@PostMapping("/remove/like")
@@ -112,6 +121,7 @@ public class PostController {
 	}
 	/**
 	 * add new {@link Post} {@link Comment}
+	 *
 	 * @param request		 {@link Comment} content,{@link Post} id,{@link User} id 
 	 * @return updated comments list
 	 */

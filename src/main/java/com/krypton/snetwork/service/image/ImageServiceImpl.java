@@ -4,9 +4,7 @@ import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.repository.ImageRepository;
 import com.krypton.snetwork.service.common.Tools;
-import net.coobird.thumbnailator.Thumbnailator;
 import net.coobird.thumbnailator.Thumbnails;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,11 +18,14 @@ import java.util.Optional;
 @Service
 public class ImageServiceImpl implements ImageService {
 
-	@Autowired
-	private ImageRepository imageRepository;
+	private final ImageRepository imageRepository;
 
-	@Autowired
-	private Tools tools;
+	private final Tools tools;
+
+	public ImageServiceImpl(ImageRepository imageRepository, Tools tools) {
+		this.imageRepository = imageRepository;
+		this.tools = tools;
+	}
 
 	@Override
 	public Image getImage(Long id) {

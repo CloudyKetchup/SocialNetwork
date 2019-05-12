@@ -1,28 +1,20 @@
 package com.krypton.snetwork.controllers;
 
 import com.krypton.snetwork.model.user.User;
-import com.krypton.snetwork.service.common.Tools;
-import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 
 @Controller
 public class AuthController{
 
-    @Autowired
-    private UserServiceImpl userService;
+    private final UserServiceImpl userService;
 
-    @Autowired
-    private ImageServiceImpl imageService;
-
-    @Autowired
-    private Tools tools;
-
+    public AuthController(UserServiceImpl userService) {
+        this.userService = userService;
+    }
     /**
      * redirect to registration page
      * @return 		registration page
@@ -45,15 +37,15 @@ public class AuthController{
         return "login.html";
     }
     /**
-     * user login procedure
+     * login procedure
      * @param  formData 	user email and password
      * @return response message,may contain {@link User} entity
      */
     @PostMapping("/login")
     @ResponseBody
     public HashMap<String, Object> login(@RequestBody HashMap<String, String> formData) {
-        String email 	= formData.get("email");
-        String password = formData.get("password");
+        String email 	= formData.get("email");    // request email
+        String password = formData.get("password"); // request password
 
         HashMap<String, Object> response;
         
@@ -81,13 +73,12 @@ public class AuthController{
     }
     /**
      * user registration procedure
-     * @param form      
+     * @param form      data for registration
      * @return message "account exist" or "registered"
      */
     @PostMapping("/register")
     @ResponseBody
     public String register(@RequestBody HashMap<String, String> form) {
-        System.out.println(form);
         String name     = form.get("name");
         String surname  = form.get("surname");
         String email 	= form.get("email");

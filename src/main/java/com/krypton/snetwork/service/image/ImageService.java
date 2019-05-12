@@ -4,7 +4,6 @@ import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.group.Group;
-import com.krypton.snetwork.model.common.EntityType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
