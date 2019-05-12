@@ -21,8 +21,8 @@ async function changeBackground() {
 	reader.readAsDataURL($('#choose-background-photo').prop('files')[0])
 }
 function loginTrigger() {
-  const email    = $('#login-email')
-  const password = $('#login-password')
+  const email    = $('.email-field')
+  const password = $('.password-field')
   if (email.val() !== '' && password.val() !== '') {
     // login procedure
     login(email,password)
@@ -35,11 +35,10 @@ function login(emailfield,passwordfield) {
     contentType : 'application/json; charset=utf-8',
     url : 'http://localhost:8080/login',
     data : JSON.stringify({
-      'email': emailfield.val(),      // email value from field
+      'email'	: emailfield.val(),   // email value from field
       'password': passwordfield.val() // password value from field
     }),
     success : (result) => {
-    	console.log(result)
 	    // check if login was successful
 		if(result['response'] === 'login success') {
 		    // create cookie with user data : name, surname, email, password
@@ -78,8 +77,8 @@ function register(name, surname, email, password) {
 	    success : (result) => {
 		    // check if registration was successful
 		    if (result === 'registered') {
-		        sendPhoto(email.val(), 'profile')
-		        sendPhoto(email.val(), 'background')
+		        sendProfilePicture(email)
+		        sendBackgroundPicture(email, password)
 		    }else {
 		        // empty fields if failed
 		        name.val('')
@@ -87,21 +86,44 @@ function register(name, surname, email, password) {
 		        email.val('')
 		        password.val('')
 		    }
-		    // redirect to homepage
-		    window.location.replace("http://localhost:8080/")
 	    }
   	})
 }
-// send photo via ajax,profile or background
-function sendPhoto(email, photoType) {
+function sendProfilePicture(email) {
 	const formData = new FormData()
-  	formData.append('picture', $('#choose-' + photoType + '-photo').prop('files')[0])
-  	formData.append('email', email)
+  	formData.append('picture', $('#choose-profile-photo').prop('files')[0])
+  	formData.append('email', email.val())
 	$.ajax({
 		type : 'POST',
-		url  : 'http://localhost:8080/image/add/user/' + photoType + '-picture',
+		url  : 'http://localhost:8080/images/add/user/profile-picture',
 		contentType : false,
     	processData : false,
     	data : formData
 	})
+}
+function sendBackgroundPicture(email, password) {
+	const formData = new FormData()
+  	formData.append('picture', $('#choose-background-photo').prop('files')[0])
+  	formData.append('email', email.val())
+	$.ajax({
+		type : 'POST',
+		url  : 'http://localhost:8080/images/add/user/background-picture',
+		contentType : false,
+    	processData : false,
+    	data : formData,
+    	success : () => login(email, password)
+	})
+}
+// create cookie
+function setCookie(account) {
+  // remove old cookie
+  Cookies.remove('account-data',{ path : ''})
+  // create new cookie
+  Cookies.set('account-data', {
+    'id'      : account['id'],
+    'name'	  : account['name'],
+    'email'   : account['email'],
+    'password': account['password'],
+    'path'    : ''  // path to cookie
+  })
 }
