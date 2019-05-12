@@ -54,10 +54,14 @@ public class User {
     private Set<Group> groups = new HashSet<>();
 
     @ManyToMany
+    @JsonIgnore
     private Set<User> followers = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     @JsonIgnore
+    private Set<User> following = new HashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL)
     private Set<Post> posts = new HashSet<>();
 
     public User() {}
@@ -80,7 +84,6 @@ public class User {
                 ", type="               + type +
                 ", profilePicture="     + profilePicture +
                 ", backgroundPicture="  + backgroundPicture +
-                ", followers="          + followers +
                 '}';
     }
 }

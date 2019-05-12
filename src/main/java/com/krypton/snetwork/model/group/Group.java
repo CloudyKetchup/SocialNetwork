@@ -1,5 +1,6 @@
 package com.krypton.snetwork.model.group;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.common.EntityType;
@@ -28,36 +29,35 @@ public class Group {
 
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "image_id")
-	private Image profilePhoto;
+	private Image profilePicture;
 
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "background_id")
-	private Image backgroundPhoto;
+	private Image backgroundPicture;
 
 	@ManyToMany
+	@JsonIgnore
 	private Set<User> followers = new HashSet<>();
 
 	@OneToMany(cascade = CascadeType.ALL)
 	private Set<Post> posts = new HashSet<>();
 
 	@Column
-	private EntityType type;
+	private EntityType type = EntityType.GROUP;
 
 	public Group() {}
 
-	public Group(String name, User admin, Image profilePhoto, Image backgroundPhoto) {
-		this.name 			 = name;
-		this.admin 			 = admin;
-		this.profilePhoto 	 = profilePhoto;
-		this.backgroundPhoto = backgroundPhoto;
-		this.type 			 = EntityType.GROUP;
+	public Group(String name, User admin, Image profilePicture, Image backgroundPicture) {
+		this.name 			 	= name;
+		this.admin 			 	= admin;
+		this.profilePicture 	= profilePicture;
+		this.backgroundPicture 	= backgroundPicture;
 		followers.add(admin);
 	}
 
 	public Group(String name,User admin) {
 		this.name  = name;
 		this.admin = admin;
-		this.type  = EntityType.GROUP;
 		followers.add(admin);
 	}
 }
