@@ -1,15 +1,30 @@
-feedOpened   = true
-groupOpened  = false
-userOpened   = false
-searchOpened = false
+feedOpened   = true;
+groupOpened  = false;
+userOpened   = false;
+searchOpened = false;
 
 function onLoad() {
-  onloadRedirect()
-  newsFeed()
+  onloadRedirect();
+  newsFeed();
+  getUserData(getUser(), (account) => accountButton(account));
+}
+function accountButton(account) {
+  $('.account')
+    .append(
+      $('<div/>')
+        .attr('class','account-image')
+        .append(
+          $('<img/>')
+            .attr('src',`http://localhost:8080/images/${account['profilePicture']['id']}`)
+        ),
+      $('<p/>')
+        .html(account['name'])
+    )
+    .click(() => renderUserContainer(account));
 }
 // return cookie data
 function getUser() {
-  return JSON.parse(Cookies.get('account-data'))
+  return JSON.parse(Cookies.get('account-data'));
 }
 // spawn create room dialog
 document.getElementById('create-group').onclick = () => {
@@ -27,72 +42,59 @@ document.getElementById('create-group-submit').onclick = () => {
   }else if ($("#choose-group-image").prop('files')[0] !== undefined){
     $('#field-error')
       .css('display','block')
-      .html('Image not selected')
+      .html('Image not selected');
   }else {
     $('#field-error')
       .css('display','block')
-      .html('Field cannot be empty')
+      .html('Field cannot be empty');
   }
 }
 // hide error field if something is typed in group name field
 document.getElementById('group-name').onkeypress = () => {
-  $('#field-error').html('')
-}
-// create cookie
-function setCookie(account) {
-  // remove old cookie
-  Cookies.remove('account-data',{ path : ''})
-  // create new cookie
-  Cookies.set('account-data', {
-    'id'      : account['id'],
-    'username': account['username'],
-    'email'   : account['email'],
-    'password': account['password'],
-    'path'    : ''  // path to cookie
-  })
+  $('#field-error').html('');
 }
 // add search field to navigation
 function showSearchField() {
-  searchUsers  = true
-  searchGroups = false
+  searchUsers  = true;
+  searchGroups = false;
   $('.nav-wrapper')
     .append(
       $('<input/>')
         .attr({
           'class': 'search search-field',
-          'placeholder': 'Search users or Groups'
+          'placeholder': 'Search users or groups'
         })
         .on('keyup', () => {
           if ($('.search-field').val() !== '') {
             // search user or group in database when user is typing
             if (searchUsers) {
               searchEntity('user')
-            }else {
+            }else if (searchGroups) {}{
               searchEntity('group')
             }
           }
         }),
       // result div
       searchResult()
-    )
-  changeSearchColors()
-  searchOpened = true
+    );
+  changeSearchColors();
+  searchOpened = true;
 }
 function closeSearchField() {
-  $('.search').remove()
-  searchOpened = false
+  $('.search').remove();
+  searchOpened = false;
 }
 function changeSearchColors() {
-  if (searchUsers) {
-    $('.search-user')
-      .css('color','#f44242')
+  if (searchGroups) {
     $('.search-group')
-      .css('color','white')
+      .css('color','#f44242');
+    $('.search-user')
+      .css('color','white');
   }else {
-    $('.search-group')
-      .css('color','#f44242')
     $('.search-user')
-      .css('color','white')
+      .css('color','#f44242');
+    $('.search-group')
+      .css('color','white');
   }
 }
 // container below search
@@ -110,9 +112,9 @@ function searchResult() {
             .attr('class','fas fa-user')
         )
         .click(() => {
-          searchUsers  = true
-          searchGroups = false
-          changeSearchColors()
+          searchGroups = false;
+          searchUsers  = true;
+          changeSearchColors();
         }),
       // choose for search group
       $('<div/>')
@@ -124,63 +126,74 @@ function searchResult() {
             .attr('class','fas fa-users')
         )
         .click(() => {
+          searchGroups = true;
           searchUsers  = false
-          searchGroups = true
-          changeSearchColors()
+          changeSearchColors();
         })
-    )
+    );
 }
 // search user or group in database
 function searchEntity(entity) {
+  var findedEntity;
   $.ajax({
     type  : 'GET',
-    url   : 'http://localhost:8080/' + entity + '/name=' + $('.search-field').val(),
+    url   : `http://localhost:8080/${entity}/name=${$('.search-field').val()}`,
     success : (result) => {
       // check if entity finded and div with entity is not already created
-      if (result !== '' && $('#search-entity-' + result['id']).length == 0) {
+      if (result !== '' && $(`#search-entity-${result['id']}`).length === 0) {
         // append to search result finded user or group
-        $('.search-result').append(searchResultEntity(result,entity))
+        $('.search-result').append(searchResultEntity(result,entity));
         // save finded entity
-        findedEntity = $.extend(true, {} ,result)
+        findedEntity = $.extend(true, {} ,result);
       // check if any entity was founded 
       }else if (result === '' && findedEntity !== undefined) {
         // remove previously finded entity div
-        $('#search-entity-' + findedEntity['id']).remove()
+        $('#search-entity-' + findedEntity['id']).remove();
       }
     }
-  })
+  });
 }
-// div for searched user or group
+// div for finded user or group
 function searchResultEntity(entity,type) {
   return $('<div>')
     .attr({
       'class': 'search-entity',
       'id': 'search-entity-' + entity['id']
     })
-    .append([
+    .append(
       $('<div/>')
         .attr('class','search-entity-image')
         .append(
           $('<img/>')
-            .attr('src','http://localhost:8080/image/' + entity['profilePicture']['id'])
+            .attr('src',`http://localhost:8080/images/${entity['profilePicture']['id']}`)
         ),
       $('<span/>')
         .attr('class','search-entity-name')
         .html(entity['name'])
-    ])
-    // get searched user data
-    .click(() => $.getJSON('http://localhost:8080/user/' + entity['id'], (result) => {
-      // show user container
-
-    }))
+    )
+    // get user or group data
+    .click(() => $.getJSON(`http://localhost:8080/${entity['type'].toLowerCase()}/name=${entity['name']}`, (result) => {
+      $('.search').remove();
+      // render user or group container
+      if (entity['type'] === 'USER') {
+        renderUserContainer(result);
+      }else {
+        groupData = $.extend(true, {}, result);
+        renderGroupContainer(result);
+      }
+    }));
 }
 // check login status
 async function onloadRedirect() {
   // check if cookie exist
   if (Cookies.get('account-data') === undefined) {
-    window.location.href = "/login"
+    window.location.href = "/login";
   }else {
-    getUserGroups()
+    getUserGroups();
+    // render persons who user follows at right panel
+    $.getJSON(`http://localhost:8080/user/following/${getUser()['id']}`, (result) => {
+      result.forEach(follower => renderFollowing(follower));
+    });
   }
 }
 // add news feed to main container
@@ -204,13 +217,24 @@ async function newsFeed() {
                 .attr('class','posts')
             )
         )
-    )
-  getFeedPosts()
+    );
+  getFeedPosts();
 }
 // get home feed posts
 function getFeedPosts() {
-  $.getJSON('http://localhost:8080/user/feed/' + getUser()['id'], (result) => {
-    appendPosts(result)
+  $.getJSON(`http://localhost:8080/user/feed/${getUser()['id']}`, (result) => {
+    if (result.length == 0) {
+      $('.posts').append(
+        $('<span/>')
+          .attr('class','empty-feed-text')
+          .html('Wow,such empty,follow some groups or users first'),
+        $('<div/>')
+          .attr('class','empty-box')
+          .append($('<img/>').attr('src','../icons/empty.svg'))
+      );
+    }else {
+      appendPosts(result);
+    }
   })
 }
 /* json from ajax give objects in random
@@ -219,25 +243,25 @@ function sortJsonObjects(objects) {
   for (let i = 0; i < objects.length; i++) {
     for(let j = 0; j < objects.length; j++) {
       if (objects[i]['id'] > objects[j]['id']) {
-        const temp = objects[i]
-        objects[i] = objects[j]
-        objects[j] = temp
+        const temp = objects[i];
+        objects[i] = objects[j];
+        objects[j] = temp;
       }
     }
   }
-  return objects
+  return objects;
 }
 // create new group request
 function createGroup() {
-  const formData = new FormData()
+  const formData = new FormData();
   // image file
-  formData.append('image', $("#choose-group-image").prop('files')[0])
+  formData.append('image', $("#choose-group-image").prop('files')[0]);
   // background file
-  formData.append('background', $("#choose-group-background").prop('files')[0])
+  formData.append('background', $("#choose-group-background").prop('files')[0]);
   // group name
-  formData.append('name' , $('#group-name').val())
+  formData.append('name' , $('#group-name').val());
   // group admin email
-  formData.append('admin', getUser()['email'])
+  formData.append('admin', getUser()['email']);
   $.ajax({
     type : 'POST',
     url : 'http://localhost:8080/group/new',
@@ -248,151 +272,173 @@ function createGroup() {
       // check if group was created
       if (result === 'group created') {
         // clear groups list
-        $('.groups-box').empty()
+        $('.groups-box').empty();
         // update user groups
-        getUserGroups()
+        getUserGroups();
       }else {
         // empty name field
-        $('#group-name').val('')
+        $('#group-name').val('');
         // show field error
         $('#field-error')
-          .css('display','block')
-          .html('group already exist')
+          .show()
+          .html('group already exist');
       }
     }
-  })
+  });
 }
 // get group data like posts,images,followers...
-function getGroupData(group) {
+function getGroupData(group, callback) {
   $.ajax({
     type : 'GET',
-    url  : 'http://localhost:8080/group/id=' + group['id'],
+    url  : `http://localhost:8080/group/id=${group['id']}`,
     async: false, 
     success : (result) => {
-      groupData = $.extend(true, {}, result)
+      groupData = $.extend(true, {}, result);
+
+      if (callback !== undefined) {
+        callback(result)
+      } 
     }
-  })
+  });
 }
-function getUserData() {
-  $.getJSON('http://localhost:8080/user/name=' + getUser()['name'], (result) => {
-    userData = $.extend(true, {}, result)
-  })
+function getUserData(user, callback) {
+  $.getJSON(`http://localhost:8080/user/name=${user['name']}`, (result) => {
+    callback(result);
+  });
 }
 // request user groups json
 function getUserGroups() {
-  $.getJSON('http://localhost:8080/user/groups/' + getUser()['email'], (result) => {
-      // user groups list from request
-      const sortedGroups = sortJsonObjects(result)
-      for (i in sortedGroups) {
-        // add group div to list from right panel
-        renderGroups(sortedGroups[i])
-      }
-  })
+  $.getJSON(`http://localhost:8080/user/groups/${getUser()['email']}`, (result) => {
+      $('.groups-box').empty();
+      // render all groups in left panel
+      sortJsonObjects(result).forEach(group => renderGroup(group))
+  });
 }
-function renderUserContainer() {
+function renderUserContainer(user) {
   // remove news feed
-  $('.feed').remove()
-  feedOpened  = false
-  groupOpened = false
-  userOpened  = true
+  $('.feed').remove();
+  feedOpened  = false;
+  groupOpened = false;
+  userOpened  = true;
   // hide right panel containing friends
-  $('.right-panel').css('display','none')
-  // add group container
-  $('.main-container').append(
-    $('<div/>')
-      .attr('class','user-container')
-      // append group container elements
-      .append(
-        // group header
-        $('<div/>')
-          .attr('class','user-header')
-          .css(
-            'background-image',
-            'url(' + 'http://localhost:8080/image/' + userData['backgroundPhoto']['id'] + ')'
-          )
-          .append(
-            // overlay making group background image darker
-            $('<div/>')
-              .attr('class','user-header-overlay'),
-            // close button
-            containerClose(),
-            // group follow button
-            followButton(userData),
-            $('<p/>')
-              .html(userData['followers'].length + '  Followers'),
-            // container storing profile image
-            groupContainerImage(),
-          ),
-        $('<div/>')
-          .attr('class','group-content')
-          .append(
-            $('<div/>').attr('class','posts')
-          )
-      ),
-    groupfollowers(groupData['followers'])
-  )
-  appendPosts(groupData['posts'])
+  $('.right-panel').css('display','none');
+  // get user followers list,request is async so we execute all other work inside
+  $.getJSON(`http://localhost:8080/user/followers/${user['id']}`, (followers) => {
+    // add user container
+    $('.main-container').append(
+      $('<div/>')
+        .attr('class','entity-container')
+        // append user container elements
+        .append(
+          // header
+          $('<div/>')
+            .attr('class','entity-header')
+            .css(
+              'background-image',
+              `url(http://localhost:8080/images/${user['backgroundPicture']['id']})`
+            )
+            .append(
+              // overlay making user background image darker
+              $('<div/>')
+                .attr('class','entity-header-overlay'),
+              // close button
+              containerClose(),
+              $('<p/>')
+                .html(`${followers.length}  Follower(s)`),
+              // container storing profile image
+              entityContainerImage(user),
+            ),
+          $('<div/>')
+            .attr('class','content')
+            .append(
+              $('<div/>').attr('class','posts')
+            )
+        ),
+      followersContainer(followers)
+    );
+    // add follow button if user for container isn't client
+    if (user['email'] !== getUser()['email']) {
+      $('.entity-header p').css({'bottom' : '0px','left' : '10px'});
+      $('.entity-header').append(followButton(user, followers).css({
+        'margin-top' : '185px',
+        'margin-left': '10px'
+      }));
+    }else {
+      $('.entity-header').append(newPostContainer());
+    }
+    appendPosts(user['posts']);
+  });
 }
-// add group to groups list at right panel
-async function renderGroups(group) {
+// add following users list at right panel
+async function renderFollowing(user) {
+  $('.following-box').empty();
+  // append user div to following list
+  $('.following-box').append(userDiv(user).attr('class','following-user'));
+}
+// add following groups list at left panel
+async function renderGroup(group) {
   // append group div to group list
   $('.groups-box').append(
     $('<button/>')
       .html(group['name'])
       .attr('class','group')
       .click(() => {
-        $('.group-container').remove()
-        getGroupData(group)
+        $('.entity-container').remove();
+        getGroupData(group);
         // render group photo,posts and followers
-        renderGroupContainer()
+        renderGroupContainer(group);
       }
     )
   )
 }
-async function renderGroupContainer() {
+async function renderGroupContainer(group) {
   // remove news feed
-  $('.feed').remove()
-  feedOpened  = false
-  groupOpened = true
-  userOpened  = false
+  $('.feed').remove();
+  feedOpened  = false;
+  groupOpened = true;
+  userOpened  = false;
   // hide right panel containing friends
-  $('.right-panel').css('display','none')
-  // add group container
-  $('.main-container').append(
-    $('<div/>')
-      .attr('class','group-container')
-      // append group container elements
-      .append(
-        // group header
-        $('<div/>')
-          .attr('class','group-header')
-          .css(
-            'background-image',
-            'url(' + 'http://localhost:8080/image/' + groupData['backgroundPhoto']['id'] + ')'
-          )
-          .append(
-            // overlay making group background image darker
-            $('<div/>')
-              .attr('class','group-header-overlay'),
-            // close button
-            containerClose(),
-            followButton(groupData),
-            // container with new post input/submit
-            newPostContainer("Group"),
-            $('<p/>')
-              .html(groupData['followers'].length + '  Followers'),
-            // container storing group images
-            groupContainerImage(),
-          ),
-        $('<div/>')
-          .attr('class','group-content')
-          .append(
-            $('<div/>').attr('class','posts')
-          )
-      ),
-    groupfollowers(groupData['followers'])
-  )
-  appendPosts(groupData['posts'])
+  $('.right-panel').css('display','none');
+  // 
+  $.getJSON(`http://localhost:8080/group/followers/${group['id']}`,(followers) => {
+    // add group container
+    $('.main-container').append(
+      $('<div/>')
+        .attr('class','entity-container')
+        // append group container elements
+        .append(
+          // header
+          $('<div/>')
+            .attr('class','entity-header')
+            .css(
+              'background-image',
+              `url(http://localhost:8080/images/${group['backgroundPicture']['id']})`
+            )
+            .append(
+              // overlay making group background image darker
+              $('<div/>')
+                .attr('class','entity-header-overlay'),
+              // close button
+              containerClose(),
+              followButton(group, followers),
+              // container with new post input/submit
+              newPostContainer("Group"),
+              $('<p/>')
+                .css('margin-left','85px')
+                .html(`${followers.length}  Follower(s)`),
+              // container storing group images
+              entityContainerImage(group),
+            ),
+          $('<div/>')
+            .attr('class','content')
+            .append(
+              $('<div/>').attr('class','posts')
+            )
+        ),
+      followersContainer(followers)
+    );
+    appendPosts(group['posts']);
+  }); 
 }
 // close button for container
 function containerClose() {
@@ -402,25 +448,30 @@ function containerClose() {
       .attr('class','fas fa-chevron-left')
       .click(() => {
           // show right panel containing friends
-          $('.right-panel').show()
+          $('.right-panel').show();
           // remove followers conta iner
-          $('.followers-container').remove()
+          $('.followers-container').remove();
           // remove group container
-          $('.group-container').remove()
-          feedOpened  = true
-          groupOpened = false
-          userOpened  = false
+          $('.entity-container').remove();
+          feedOpened  = true;
+          groupOpened = false;
+          userOpened  = false;
           // restore news feed
-          newsFeed()
-        }
-      )
+          newsFeed();
+          // update group list
+          getUserGroups();
+          $.getJSON(`http://localhost:8080/user/following/${getUser()['id']}`, (result) => {
+            // update persons who this user follows
+            result.forEach(follower => renderFollowing(follower));
+          });
+      })
 }
 // new post container
 function newPostContainer(postType) {
   return $('<div/>')
     .attr('class','new-post')
     // add elements to new post container
-    .append([
+    .append(
       // post content field
       $('<input/>')
         .attr({
@@ -451,12 +502,12 @@ function newPostContainer(postType) {
             .attr('class','fa fa-paper-plane')
         )
         .click(() => sendNewPost(postType))
-    ])
+    );
 }
 // send new post to group or user wall
 function sendNewPost(postType) {
-  const postPicture = $('.choose-post-picture').prop('files')[0]
-  const parent = feedOpened ? getUser()['id'] : groupData['id']
+  const postPicture = $('.choose-post-picture').prop('files')[0];
+  const parent = feedOpened ? getUser()['id'] : groupData['id'];
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
@@ -475,27 +526,27 @@ function sendNewPost(postType) {
     }),
     success : (result) => {
       // empty post input
-      $('.new-post-input').val('')
-      if (postPicture != undefined) {
-        sendPostPicture(result,postPicture)
+      $('.new-post-input').val('');
+      if (postPicture !== undefined) {
+        sendPostPicture(result,postPicture);
       }else if (feedOpened) {
         // update feed posts
-        getFeedPosts()
+        getFeedPosts();
       }else {
         // update group data
-        getGroupData(groupData)
-        appendPosts(groupData['posts'])
+        getGroupData(groupData);
+        appendPosts(groupData['posts']);
       }
     }
-  })
+  });
 }
 // add picture to post after post was send
 function sendPostPicture(post,postPicture) {
-  const formData = new FormData()
+  const formData = new FormData();
   // picture file
-  formData.append('post_picture', postPicture)
+  formData.append('post_picture', postPicture);
   // post data
-  formData.append('post',post['id'])
+  formData.append('post',post['id']);
   $.ajax({
     type : 'POST',
     url : 'http://localhost:8080/post/add/picture',
@@ -505,104 +556,153 @@ function sendPostPicture(post,postPicture) {
     success : (result) => {
       if (feedOpened) {
         // update feed posts
-        getFeedPosts()
+        getFeedPosts();
       }else {
         // update group data
-        getGroupData(groupData)
-        appendPosts(groupData['posts'])
+        getGroupData(groupData);
+        appendPosts(groupData['posts']);
       }
     }
-  })
+  });
 }
-// group image in container in top right corner
-function groupContainerImage() {
+function entityContainerImage(entity) {
   // top right container that stores group image
-  return imageContainer = $('<div/>')
-    .attr('class','group-image-container')
+  const imageContainer = $('<div/>')
+    .attr('class','entity-image-container')
     // container elements
     .append(
       // group image
       $('<img/>')
         .attr({
-          'src': 'http://localhost:8080/image/' + groupData['profilePhoto']['id'],
-          'class': 'group-image'
-        }),
-      $('<span/>')
-        .html(groupData['name'])
-    )
+          'src': `http://localhost:8080/images/${entity['profilePicture']['id']}`,
+          'class': 'entity-image'
+        })
+    );
+    // show only name or name and surname
+    if (entity['type'] === 'GROUP') {
+      imageContainer.append(
+        $('<span/>').html(`${entity['name']}`)
+      );
+    }else {
+      imageContainer.append(
+        $('<span/>').html(`${entity['name']} ${entity['surname']}`)
+      );
+    }
+    return imageContainer;
 }
 // follow user or group
-function followButton(entity) {
-  let followText = 'Follow'
-  // user email from cookie
-  const email    = getUser()['email']
+function followButton(entity, followers) {
+  let followText = 'Follow';
   // check if user is following entity and change follow button text
-  for (i in entity['followers']) {
+  followers.forEach(follower => {
     // check if user is in entity followers list
-    if (entity['followers'][i]['email'] === email) {
+    if (follower['email'] === getUser()['email']) {
       // change follow button text
-      followText = 'Following'
-      break
+      followText = 'Following';
     }
-  }
+  });
   // group follow button
   return $('<button/>')
-    .attr('class','group-follow')
+    .attr('class','follow-button')
     .html(followText)
+    .click(() => {
+      if ($('.follow-button').html() === 'Following') {
+        sendUnfollow(entity);
+      }else {
+        sendFollow(entity);
+      }
+    })
 }
-// container with group followers at bottom left
-function groupfollowers(followers) {
+// send request to follow to user or group
+function sendFollow(entity) { 
+  $.ajax({
+    type : 'POST',
+    url  : `http://localhost:8080/${entity['type'].toLowerCase()}/follow/${entity['id']}`,
+    data : {'email' : getUser()['email']},
+    // change follow button text
+    success : () => {
+      $('.follow-button').html('Following')
+      // add user to followers container
+      updateFollowersContainer(entity);
+    }
+  });
+}
+function sendUnfollow(entity) {
+  $.ajax({
+    type : 'POST',
+    url  : `http://localhost:8080/${entity['type'].toLowerCase()}/unFollow/${entity['id']}`,
+    data : {'email' : getUser()['email']},
+    // change follow button text
+    success : () => {
+      $('.follow-button').html('Follow');
+      // remove user from followers container
+      updateFollowersContainer(entity);
+    }
+  });
+}
+// update user or group followers container
+function updateFollowersContainer(entity) {
+  $.getJSON(`http://localhost:8080/${entity['type'].toLowerCase()}/followers/${entity['id']}`, 
+    (updatedFollowers) => {
+      $('.followers').empty();
+      // add all followers to right side
+      sortJsonObjects(updatedFollowers).forEach(follower => {
+        $('.followers-container')
+          .find('.followers')
+          .append(userDiv(follower));
+      });
+    }
+  );
+}
+// container with followers at right side
+function followersContainer(followers) {
   const followersContainer = $('<div/>')
     .attr('class','followers-container')
     .append(
       $('<div/>')
-        .attr('class','group-followers')
-    )
-  // add all followers from group to container
-  for (i in followers) {
+        .attr('class','followers')
+    );
+  // add all followers to right side
+  followers.forEach(follower => {
     followersContainer
-      .find('.group-followers')
-      .append(groupfollower(followers[i]))
-  }
-  return followersContainer
+      .find('.followers')
+      .append(userDiv(follower));
+  });
+  return followersContainer;
 }
-function groupfollower(follower) {
+function userDiv(follower) {
   return $('<div>')
-    .attr('class','follower')
-    .append([
+    .attr('class','user')
+    .append(
       $('<div/>')
         .attr('class','follower-image')
         .append(
           $('<img/>')
-            .attr('src','http://localhost:8080/image/' + follower['profilePicture']['id'])
+            .attr('src',`http://localhost:8080/images/${follower['profilePicture']['id']}`)
         ),
       $('<span/>')
-        .attr('class','follower-name')
-        .html(follower['name'])
-    ])
+        .html(follower['name'] + ' ' + follower['surname'])
+    )
+    .click(() => renderUserContainer(follower));
 }
 function getPostAuthor(post_id) {
-  let author
+  let author;
   $.ajax({
     type : 'GET',
-    url : 'http://localhost:8080/post/author/' + post_id,
+    url : `http://localhost:8080/post/author/${post_id}`,
     async : false,
     success : (result) => {
-      author = result
+      author = result;
     }
-  })
-  return author
+  });
+  return author;
 }
 // add all posts to posts container
 function appendPosts(posts) {
-  $('.posts').empty()
-  // sort posts
-  const sortedPosts = sortJsonObjects(posts)
-  // append to container all posts
-  for (i in sortedPosts) {
-    const post = sortedPosts[i]
+  $('.posts').empty();
+  sortJsonObjects(posts).forEach(post => {
     // add post to feed
-    $('.posts').append(postDiv(post))
+    $('.posts').append(postDiv(post));
     // if post contains picture add img element
     if (post['picture'] !== null) {
       $('.post-' + post['id'] + '-content-box')
@@ -611,17 +711,17 @@ function appendPosts(posts) {
           $('<img/>')
             .attr({
               'class': 'post-picture',
-              'src': 'http://localhost:8080/post/picture/' + post['id']
+              'src': `http://localhost:8080/post/picture/${post['id']}`
             })
-        )  
+        );
     }
-  }
+  });
 }
 function postDiv(post) {
   const postDiv = $('<div/>')
     .attr({
       'class': 'post',
-      'id': 'post-' + post['id']
+      'id': `post-${post['id']}`
     })
     .append(
       // post header
@@ -637,7 +737,7 @@ function postDiv(post) {
         ),
       // content text
       $('<div/>')
-        .attr('class','post-' + post['id'] + '-content-box')
+        .attr('class',`post-${post['id']}-content-box`)
         .append(
           $('<p/>')
             .attr('class','post-text')
@@ -653,11 +753,11 @@ function postDiv(post) {
           likeButton(post),
           commentButton(post)
         )
-    )
+    );
     if (post['picture'] !== null) {
-      postDiv.append(commentsContainer(post))
+      postDiv.append(commentsContainer(post));
     }
-    return postDiv
+    return postDiv;
 }
 // convert time from long to hour and minute format
 function timeConverter(time) {
@@ -667,7 +767,7 @@ function timeConverter(time) {
 }
 // post author image and username
 function postAuthor(post_id) {
-  author = getPostAuthor(post_id)
+  author = getPostAuthor(post_id);
   return [
     // username
     $('<span/>')
@@ -682,20 +782,20 @@ function postAuthor(post_id) {
       .append(
         $('<img/>')
           .attr(
-            'src','http://localhost:8080/image/' + author['profilePicture']['id']
+            'src',`http://localhost:8080/images/${author['profilePicture']['id']}`
           )
       )
-  ]
+  ];
 }
 // like button with heart icon
 function likeButton(post) {
   // user liked this post true/false
-  let liked
+  let liked;
   // check if user already liked post
   if (post['likes'].includes(getUser()['id'])) {
-    liked = true
+    liked = true;
   }else {
-    liked = false
+    liked = false;
   }
   const likeButton = $('<button/>')
     .attr('class','like-button')
@@ -703,30 +803,30 @@ function likeButton(post) {
       $('<i/>')
         .attr('class','fas fa-heart')
         // likes count number on icon
-        .html(' ' + post['likes'].length)
-    )
+        .html(` ${post['likes'].length}`)
+    );
   // like button settings based on liked status
   if (liked) {
     likeButton
       // change button color to red
       .css('color','#F44256')
       // on tap will remove user like
-      .click(() => sendLike(post,'remove/like'))
+      .click(() => sendLike(post,'remove/like'));
   }else {
     likeButton
       // change color to grey
       .css('color','grey')
       // on tap will add user like
-      .click(() => sendLike(post,'add/like'))
+      .click(() => sendLike(post,'add/like'));
   }
-  return likeButton
+  return likeButton;
 }
 // send group post like with action add/remove
 function sendLike(post,action) {
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
-    url : 'http://localhost:8080/post/' + action,
+    url : `http://localhost:8080/post/${action}`,
     data : JSON.stringify({
       'post_id'   : post['id'],
       'author_id' : getUser()['id']
@@ -734,13 +834,13 @@ function sendLike(post,action) {
     success: () => {
       // update posts list
       if (feedOpened) {
-        getFeedPosts()
+        getFeedPosts();
       }else if (groupOpened){
-        getGroupData(groupData)
-        appendPosts(groupData['posts'])
+        getGroupData(groupData);
+        appendPosts(groupData['posts']);
       }
     }
-  })
+  });
 }
 // post comments button
 function commentButton(post) {
@@ -751,18 +851,18 @@ function commentButton(post) {
       $('<i/>')
         .attr({
           'class': 'fas fa-comment',
-          'id': 'post-' + post['id'] + '-comments-button-icon'
+          'id': `post-${post['id']}-comments-button-icon`
         })
         // comments count number on icon
-        .html(' ' + post['comments'].length)
-    )
+        .html(` ${post['comments'].length}`)
+    );
 }
 // container containing comments
 function commentsContainer(post) {
   return $('<div/>')
     .attr({
       'class': 'comments-container',
-      'id': 'comments-container-' + post['id']
+      'id': `comments-container-${post['id']}`
     })
     // comments container elements
     .append(
@@ -784,11 +884,9 @@ function commentsContainer(post) {
           $('<button/>')
             .attr('class','comment-submit')
             .html('Send')
-            .click(() =>
-              sendComment(post)
-            )
+            .click(() => sendComment(post))
         )
-    )
+    );
 }
 // comments divs
 function postComments(post) {
@@ -796,10 +894,9 @@ function postComments(post) {
     .attr('class','comments')
     .css({
       'overflow': 'auto'
-    })
-  const sortedComments = sortJsonObjects(post['comments'])
+    });
   // add all comments divs
-  for (i in sortedComments) {
+  sortJsonObjects(post['comments']).forEach(comment => {
     commentsBox.append(
       // comment div
       $('<div/>')
@@ -807,18 +904,18 @@ function postComments(post) {
         // comment elements
         .append(
           // author
-          postAuthor(sortedComments[i]['id']),
+          postAuthor(comment['id']),
           // content
           $('<p/>')
             .css({
               'margin-top':'5px',
               'overflow-wrap':'break-word'
             })
-            .html(sortedComments[i]['content']),
+            .html(comment['content']),
         )
-    )
-  }
-  return commentsBox
+    );
+  });
+  return commentsBox;
 }
 // send post comment via request
 function sendComment(post) {
@@ -831,18 +928,18 @@ function sendComment(post) {
       'content' : $('.comment-input').val(),
       'author'  : getUser()['email']
     }),
-    success: (result) => {
+    success : (result) => {
       // update post comments
-      updateComments(result)
+      updateComments(result);
     }
-  })
+  });
 }
 // update post comments
 function updateComments(post) {
   // remove comments
-  $('#comments-container-' + post['id']).remove()
+  $(`#comments-container-${post['id']}`).remove();
   // update comments container
-  $('#post-' + post['id']).append(commentsContainer(post))
+  $(`#post-${post['id']}`).append(commentsContainer(post));
   // update comments number
-  $('#post-' + post['id'] + '-comments-button-icon').html(' ' + post['comments'].length)
+  $(`#post-${post['id']}-comments-button-icon`).html(` ${post['comments'].length}`);
 }

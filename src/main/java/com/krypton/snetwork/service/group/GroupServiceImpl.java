@@ -7,7 +7,6 @@ import com.krypton.snetwork.repository.GroupRepository;
 import com.krypton.snetwork.repository.UserRepository;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,18 +15,21 @@ import java.util.Optional;
 @Service
 public class GroupServiceImpl implements GroupService {
 
-	@Autowired
-	private GroupRepository groupRepository;
-	
-	@Autowired
-	private UserServiceImpl userService;
+	private final UserRepository userRepository;
 
-	@Autowired
-	private UserRepository userRepository;
-
-	@Autowired
-	private ImageServiceImpl imageService;
+	private final GroupRepository groupRepository;
 	
+	private final UserServiceImpl userService;
+
+	private final ImageServiceImpl imageService;
+
+	public GroupServiceImpl(UserRepository userRepository, GroupRepository groupRepository, UserServiceImpl userService, ImageServiceImpl imageService) {
+		this.userRepository  = userRepository;
+		this.groupRepository = groupRepository;
+		this.userService  	 = userService;
+		this.imageService 	 = imageService;
+	}
+
 	@Override
 	public boolean groupExist(String name) {
 		return getGroup(name) != null;
@@ -47,8 +49,36 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public void addFollower(Group group, User member) {
-		group.getFollowers().add(member);
+ 	public void followGroup(Group group, User follower) {
+ 		follower.getGroups().add(group);
+
+ 		// add follower to group
+ 		addFollower(group, follower);
+
+ 		// update follower in database
+ 		userRepository.save(follower);
+ 	}
+
+ 	@Override
+ 	public void unFollowGroup(Group group, User follower) {
+ 		follower.getGroups().remove(group);
+
+ 		// remove follower from group
+ 		removeFollower(group, follower);
+
+ 		// update follower in database
+ 		userRepository.save(follower);
+ 	}
+
+	@Override
+	public void addFollower(Group group, User follower) {
+		group.getFollowers().add(follower);
+		groupRepository.save(group);
+	}
+
+	@Override
+	public void removeFollower(Group group, User follower) {
+		group.getFollowers().remove(follower);
 		groupRepository.save(group);
 	}
 
@@ -75,23 +105,19 @@ public class GroupServiceImpl implements GroupService {
 	}
 
 	@Override
-	public void saveProfileAndBackgroundPicture(Group group, MultipartFile profilePhoto, MultipartFile background) {
+	public void saveProfileAndBackgroundPicture(Group group, MultipartFile profilePicture, MultipartFile background) {
 		// save profile picture for group
-		imageService.insertProfilePicture(
-				group.getName(), profilePhoto
-		);
+		imageService.insertProfilePicture(group.getName(), profilePicture);
+		
 		// save background picture for group
-		imageService.insertBackground(
-				group.getName(), background
-		);
+		imageService.insertBackground(group.getName(), background);
+		
 		// set group profile picture
-		group.setProfilePhoto(
-				imageService.getProfilePicture(group.getName())
-		);
+		group.setProfilePicture(imageService.getProfilePicture(group.getName()));
+		
 		// set group background picture
-		group.setBackgroundPhoto(
-				imageService.getBackground(group.getName())
-		);
+		group.setBackgroundPicture(imageService.getBackground(group.getName()));
+		
 		// update group
 		groupRepository.save(group);
 	}

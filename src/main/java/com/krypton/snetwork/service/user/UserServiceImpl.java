@@ -5,28 +5,28 @@ import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.user.User;
 import com.krypton.snetwork.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-	@Autowired
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
+
+	private final TaskExecutor taskExecutor;
+
+	public UserServiceImpl(UserRepository userRepository, TaskExecutor taskExecutor) {
+		this.userRepository = userRepository;
+		this.taskExecutor   = taskExecutor;
+	}
 
 	@Override
 	public boolean userExist(String email) {
 		return userRepository.findEmail(email).isPresent();
-	}
-
-	@Override
-	public void addGroupToUser(Group group, User user) {
-		// add group to user groups list
-		user.getGroups().add(group);
-		// update user
-		userRepository.save(user);
 	}
 
 	@Override
@@ -35,6 +35,41 @@ public class UserServiceImpl implements UserService {
 		user.getPosts().add(post);
 		// update user with post
 		userRepository.save(user);
+	}
+
+ 	@Override
+ 	public void followUser(User user, User follower) {
+ 		user.getFollowers().add(follower);
+ 		
+ 		follower.getFollowing().add(user);
+
+		// update user and follow
+ 		userRepository.save(user);
+ 		userRepository.save(follower);
+ 	}
+
+ 	@Override
+ 	public void unFollowUser(User user, User follower) {
+		user.getFollowers().remove(follower);
+
+		follower.getFollowing().remove(user);
+
+		// update user and follow
+		userRepository.save(user);
+		userRepository.save(follower);
+ 	}
+
+ 	@Override
+ 	public Set<Post> getFeedPosts(User user) {
+ 		Set<Post> feedPosts = new HashSet<>(user.getPosts());
+
+    	for (Group group : user.getGroups()) {
+			feedPosts.addAll(group.getPosts());
+        }
+    	for (User following : user.getFollowing()) {
+    		feedPosts.addAll(following.getPosts());
+       	}
+       	return feedPosts;
 	}
 
 	@Override
