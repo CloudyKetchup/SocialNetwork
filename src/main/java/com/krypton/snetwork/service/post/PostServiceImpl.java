@@ -26,7 +26,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post createPost(String content, User author, Long time) {
-        return new Post(content, author, time, EntityType.USER);
+        return new Post(content, author, time);
     }
 
     @Override
