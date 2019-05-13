@@ -40,6 +40,7 @@ public class Group {
 	private Set<User> followers = new HashSet<>();
 
 	@OneToMany(cascade = CascadeType.ALL)
+	@JsonIgnore
 	private Set<Post> posts = new HashSet<>();
 
 	@Column
