@@ -8,13 +8,14 @@ body,html {
 	padding: 0;
 	width: 100%;
 	height: 100vh;
-	background: url("../images/index.jpg") center;
+	background: url("../background/index.jpg") center;
 	background-size: cover;
 	overflow: hidden;
 }
 nav {
 	height: 8%;
 	background-color: black;
+	box-shadow: 0px 0px 11px -2px rgba(0,0,0,0.75);
 	padding: 8px;
 }
 nav ul {
@@ -69,16 +70,21 @@ input {
     margin-top: 5px;
     height: 30px;
     width: 50%;
+    animation-name: fadein;
+    animation-duration: 0.2s;
 }
 .search-result {
 	display: block;
 	background: white;
+	box-shadow: 0px 0px 10px -2px rgba(0,0,0,0.75);
     border-radius: 5px;
     right: 60px;
     margin-top: 40px;
     width: 50%;
     z-index: 2;
     position: absolute;
+    animation-name: fadein;
+    animation-duration: 0.2s;
 }
 .search-method-button {
 	background-color: black;
@@ -104,12 +110,12 @@ input {
 	background-color: rgba(0,0,0,0.3);
 	cursor: pointer;
 }
-.search-entity-image,.group-follower-image {
+.search-entity-image,.follower-image {
 	height: 40px;
 	width: 40px;
 	float: left;
 }
-.search-entity-image > img,.group-follower-image > img {
+.search-entity-image > img,.follower-image > img {
 	width: 35px;
 	height: 35px;
 	border-radius: 100px;
@@ -127,22 +133,39 @@ input {
 	margin-left: 16px;
 }
 .account {
-	height: 50px;
-	width: 50px;
-	float: left;
-	padding: 8px;
-	margin-left: 16px;
+	height: 40px;
+    width: 120px;
+    float: left;
+    margin-left: 10px;
+}
+.account > p {
+	position: absolute;
+    color: white;
+    top: -5px;
+    margin-left: 60px;
+}
+.account:hover {
+	cursor: pointer;
+}
+.account-image {
+	height: 40px;
+	width: 40px;
+}
+.account-image > img {
+	border-radius: 100px;
+	height: 40px;
 }
 .main-container {
 	height: 92%;
 	width: 100%;
-	padding-top: 5px;
+	padding-top: 10px;
 	overflow-y: scroll;
+	overflow-x: hidden;
 	z-index: -1;
     position: absolute;
 }
 .right-panel,.left-panel {
-	height: 95%;
+	height: 97%;
 	width: 15%;
 	min-width: 150px;
 	border-radius: 5px;
@@ -158,10 +181,19 @@ input {
 .left-panel {
 	left: 10px;
 }
-.friends-box,.groups-box {
+.following-box,.groups-box {
 	margin-top: 10px;
 	width: 100%;
-	height: 90%;
+	height: 95%;
+}
+.following-user {
+	border-radius: 5px;
+    line-height: 40px;
+    color: black;
+    width: 150px;
+}
+.following-user:hover {
+	cursor: pointer;
 }
 .feed {
 	display: block;
@@ -175,10 +207,10 @@ input {
     position: absolute;
 }
 .feed-content {
-	min-height: 92%;
-	margin-top: 50px;
-	background-color: #d6d2d2;
-	border-radius: 5px;
+	min-height: 93.5%;
+    margin-top: 50px;
+    background-color: #d6d2d2;
+    border-radius: 5px;
 }
 #create-group {
 	background: none;
@@ -244,7 +276,7 @@ input {
 .group:hover {
 	border-bottom: 2px solid #f44242;
 }
-.group-container {
+.entity-container {
 	display: inline-table;
 	background-color: black;
     left: 0;
@@ -260,28 +292,28 @@ input {
     animation-name: fadein;
     animation-duration: 0.2s;
 }
-.group-header,.group-header-overlay {
+.entity-header,.entity-header-overlay {
 	width: 100%;
     height: 270px;
 	border-radius: 5px;
 }
-.group-header {
+.entity-header {
 	z-index: 1;
 	position: relative;
 	background-size: cover;
 }
-.group-header > p{
+.entity-header > p{
 	bottom: 55px;
-    left: 100px;
+    left: 15px;
     color: white;
     position: absolute;
 }
-.group-header-overlay {
+.entity-header-overlay {
 	z-index: -1;
 	position: absolute;
 	background-color: rgba(0,0,0,0.40);
 }
-.group-content {
+.content {
 	display: -webkit-box;
     background-color: #d6d2d2;
     border-radius: 5px;
@@ -290,7 +322,7 @@ input {
     margin-left: -1%;
     text-align: right;
 }
-.group-follow {
+.follow-button {
 	background-color: #f44242;
     margin-top: 170px;
     margin-left: 15px;
@@ -298,10 +330,10 @@ input {
     color: white;
     transition: 0.2s;
 }
-.group-follow:hover {
+.follow-button:hover {
 	background-color: #d83a4c;
 }
-.group-image-container {
+.entity-image-container {
 	background-color: black;
     border-top-left-radius: 5px;
     text-align: center;
@@ -312,48 +344,45 @@ input {
     width: 220px;
     position: absolute;
 }
-.group-image-container > span {
+.entity-image-container > span {
 	color: white;
 	line-height: 25px;
 }
-.group-image {
+.entity-image {
 	width: 210px;
     height: 210px;
 	object-fit: cover;
 	border-radius: 5px;
 }
-.group-followers-container {
+.followers-container {
+    height: 99%;
+    width: 15%;
 	background-color: rgb(30, 30, 30);
     border-radius: 5px;
     text-align: center;
-    margin-right: 5px;
-    height: 95%;
-    width: 15%;
+    margin-right: 10px;
     min-width: 150px;
     float: right;
     padding: 5px;
 }
-.group-followers {
+.followers {
 	height: 100%;
 	width: 100%;
 }
-.group-follower {
+.user {
 	background-color: transparent;
 	height: 40px;
 	width: 100%;
 	line-height: 35px;
 	padding: 1%;
 	margin-top: 5px;
-	transition: 0.2s;
 }
-.group-follower:hover {
+.user:hover {
 	background-color: #232323;
 	cursor: pointer;
 }
-.group-follower-name {
-	float: left;
+.user > span {
 	color: white;
-    margin-left: 20px;
 }
 .post {
 	box-shadow: 0px 0px 11px -2px rgba(0,0,0,0.75);
@@ -377,6 +406,11 @@ input {
     padding: 10px;
     margin-top: -10px;
     margin-left: -1.5%;
+}
+.post-group {
+	margin-left: 150px;
+    top: 10px;
+    position: absolute;
 }
 .post-picture {
 	border-radius: 5px;
@@ -421,6 +455,7 @@ input {
     width: 70%;
 }
 .posts {
+	text-align: center;
 	border-radius: 5px;
 	min-height: 95%;
 	width: 100%;
@@ -486,7 +521,7 @@ input {
     min-width: 35%;
     top: 20%;
     bottom: 6%;
-    margin-right: 5px;
+    margin-right: 17px;
     right: 0;
     border-radius: 5px;
     overflow-y: hidden;
@@ -533,6 +568,18 @@ input {
     width: 20%;
     height: 40px;
     border-radius: 0px;
+}
+.empty-feed-text {
+	left: 0;
+	right: 0;
+    top: 60px;
+    position: absolute;
+}
+.empty-box {
+	transform: translateY(50%);
+    margin: auto;
+    height: 200px;
+    width: 200px;
 }
 @keyframes animatetop {
   	from {top: -300px; opacity: 0}
