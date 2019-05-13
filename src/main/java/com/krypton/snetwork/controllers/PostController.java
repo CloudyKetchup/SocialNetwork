@@ -45,16 +45,25 @@ public class PostController {
 	public Post newPost(@RequestBody HashMap<String, String> request) {
 		User author = userService.getUser(Long.valueOf(request.get("author")));
 
-		Post post = postService.createPost(
+		Post post   = postService.createPost(
 				request.get("content"),				// post text
 				author,								// post author
 				Long.valueOf(request.get("time"))	// when post was created
 		);
-		postRepository.save(post);
 		// check if post go to group wall else go to user wall
 		if (EntityType.GROUP.equalsType(request.get("post_type"))) {
+			// set post type to group
+			post.setType(String.valueOf(EntityType.GROUP));
+
+			postRepository.save(post);
+
 			groupService.addPost(Long.valueOf(request.get("for")), post);
 		}else {
+			// set post type to user
+			post.setType(String.valueOf(EntityType.USER));
+
+			postRepository.save(post);
+
 			userService.addPost(Long.valueOf(request.get("for")), post);
 		}
 		return post;
@@ -81,7 +90,7 @@ public class PostController {
 		@RequestParam("post")		  	Long postId
 	) {
 		// add picture to post
-		postService.addPostPicture(postPicture,postId);
+		postService.addPostPicture(postPicture, postId);
 	}
 	/**
 	 * get {@link Post} {@link Image},will come on client side like resource

@@ -44,7 +44,7 @@ public class UserController {
     /**
      * get {@link User} followers
      *
-     * @param id        {@link User} id 
+     * @param id        {@link User} id
      * @return {@link User} followers
      */
 
@@ -73,7 +73,7 @@ public class UserController {
         return userService.getUser(email).getGroups();
     }
     /**
-     * get {@link User} by name 
+     * get {@link User} by name
      *
      * @param name      {@link User} name
      * @return {@link User} entity
