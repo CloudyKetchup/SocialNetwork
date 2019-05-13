@@ -1,6 +1,7 @@
 package com.krypton.snetwork.model.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.group.Comment;
 import com.krypton.snetwork.model.image.Image;
 import com.krypton.snetwork.model.common.EntityType;
@@ -44,13 +45,15 @@ public class Post {
     @Column
     private String type;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    private Group group;
+
     public Post() {}
 
-    public Post(String content,User author,Long time,EntityType type) {
+    public Post(String content, User author, Long time) {
         this.content = content;
         this.author  = author;
         this.time    = time;
-        this.type    = String.valueOf(type);
     }
 
     @Override
@@ -62,7 +65,8 @@ public class Post {
                 ", likes="      + likes +
                 ", comments="   + comments +
                 ", picture="    + picture +
-                ", type='"      + type + '\'' +
+                ", type="       + type +
+                ", group='"     + group + '\'' +
                 '}';
     }
 }
