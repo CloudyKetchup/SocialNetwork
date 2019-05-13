@@ -145,7 +145,7 @@ function searchEntity(entity) {
         $('.search-result').append(searchResultEntity(result,entity));
         // save finded entity
         findedEntity = $.extend(true, {} ,result);
-      // check if any entity was founded 
+      // check if any entity was founded
       }else if (result === '' && findedEntity !== undefined) {
         // remove previously finded entity div
         $('#search-entity-' + findedEntity['id']).remove();
@@ -192,7 +192,8 @@ async function onloadRedirect() {
     getUserGroups();
     // render persons who user follows at right panel
     $.getJSON(`http://localhost:8080/user/following/${getUser()['id']}`, (result) => {
-      result.forEach(follower => renderFollowing(follower));
+      $('.following-box').empty();
+      sortJsonObjects(result).forEach(follower => renderFollowing(follower));
     });
   }
 }
@@ -288,23 +289,21 @@ function createGroup() {
 }
 // get group data like posts,images,followers...
 function getGroupData(group, callback) {
-  $.ajax({
-    type : 'GET',
-    url  : `http://localhost:8080/group/id=${group['id']}`,
-    async: false, 
-    success : (result) => {
-      groupData = $.extend(true, {}, result);
+  $.getJSON(`http://localhost:8080/group/id=${group['id']}`, (result) => {
+    groupData = $.extend(true, {}, result);
 
-      if (callback !== undefined) {
-        callback(result)
-      } 
+    if (callback !== undefined) {
+      callback(result)
     }
   });
 }
-function getUserData(user, callback) {
-  $.getJSON(`http://localhost:8080/user/name=${user['name']}`, (result) => {
+function getGroupPosts(group, callback) {
+  $.getJSON(`http://localhost:8080/group/posts/${group['id']}`, (result) => {
     callback(result);
   });
+}
+function getUserData(user, callback) {
+  $.getJSON(`http://localhost:8080/user/name=${user['name']}`, (result) => callback(result));
 }
 // request user groups json
 function getUserGroups() {
@@ -369,9 +368,7 @@ function renderUserContainer(user) {
     appendPosts(user['posts']);
   });
 }
-// add following users list at right panel
 async function renderFollowing(user) {
-  $('.following-box').empty();
   // append user div to following list
   $('.following-box').append(userDiv(user).attr('class','following-user'));
 }
@@ -384,9 +381,7 @@ async function renderGroup(group) {
       .attr('class','group')
       .click(() => {
         $('.entity-container').remove();
-        getGroupData(group);
-        // render group photo,posts and followers
-        renderGroupContainer(group);
+        getGroupData(group, (result) => renderGroupContainer(result));
       }
     )
   )
@@ -399,7 +394,7 @@ async function renderGroupContainer(group) {
   userOpened  = false;
   // hide right panel containing friends
   $('.right-panel').css('display','none');
-  // 
+  //
   $.getJSON(`http://localhost:8080/group/followers/${group['id']}`,(followers) => {
     // add group container
     $('.main-container').append(
@@ -437,8 +432,8 @@ async function renderGroupContainer(group) {
         ),
       followersContainer(followers)
     );
-    appendPosts(group['posts']);
-  }); 
+    getGroupPosts(group, (posts) => appendPosts(posts));
+  });
 }
 // close button for container
 function containerClose() {
@@ -461,10 +456,10 @@ function containerClose() {
           // update group list
           getUserGroups();
           $.getJSON(`http://localhost:8080/user/following/${getUser()['id']}`, (result) => {
-            // update persons who this user follows
-            result.forEach(follower => renderFollowing(follower));
+            $('.following-box').empty();
+            sortJsonObjects(result).forEach(follower => renderFollowing(follower));
           });
-      })
+      });
 }
 // new post container
 function newPostContainer(postType) {
@@ -507,7 +502,7 @@ function newPostContainer(postType) {
 // send new post to group or user wall
 function sendNewPost(postType) {
   const postPicture = $('.choose-post-picture').prop('files')[0];
-  const parent = feedOpened ? getUser()['id'] : groupData['id'];
+  const parent = feedOpened || userOpened ? getUser()['id'] : groupData['id'];
   $.ajax({
     type : 'POST',
     contentType : 'application/json; charset=utf-8',
@@ -527,15 +522,16 @@ function sendNewPost(postType) {
     success : (result) => {
       // empty post input
       $('.new-post-input').val('');
+
       if (postPicture !== undefined) {
         sendPostPicture(result,postPicture);
       }else if (feedOpened) {
         // update feed posts
         getFeedPosts();
+      }else if (userOpened) {
+        getUserData(getUser(), (user) => appendPosts(user['posts']))
       }else {
-        // update group data
-        getGroupData(groupData);
-        appendPosts(groupData['posts']);
+        getGroupPosts(groupData, (posts) => appendPosts(posts));
       }
     }
   });
@@ -558,9 +554,7 @@ function sendPostPicture(post,postPicture) {
         // update feed posts
         getFeedPosts();
       }else {
-        // update group data
-        getGroupData(groupData);
-        appendPosts(groupData['posts']);
+        getGroupPosts(groupData, (posts) => appendPosts(posts));
       }
     }
   });
@@ -614,7 +608,7 @@ function followButton(entity, followers) {
     })
 }
 // send request to follow to user or group
-function sendFollow(entity) { 
+function sendFollow(entity) {
   $.ajax({
     type : 'POST',
     url  : `http://localhost:8080/${entity['type'].toLowerCase()}/follow/${entity['id']}`,
@@ -642,7 +636,7 @@ function sendUnfollow(entity) {
 }
 // update user or group followers container
 function updateFollowersContainer(entity) {
-  $.getJSON(`http://localhost:8080/${entity['type'].toLowerCase()}/followers/${entity['id']}`, 
+  $.getJSON(`http://localhost:8080/${entity['type'].toLowerCase()}/followers/${entity['id']}`,
     (updatedFollowers) => {
       $('.followers').empty();
       // add all followers to right side
@@ -681,15 +675,15 @@ function userDiv(follower) {
             .attr('src',`http://localhost:8080/images/${follower['profilePicture']['id']}`)
         ),
       $('<span/>')
-        .html(follower['name'] + ' ' + follower['surname'])
+        .html(`${follower['name']} ${follower['surname']}`)
     )
     .click(() => renderUserContainer(follower));
 }
-function getPostAuthor(post_id) {
+function getPostAuthor(post) {
   let author;
   $.ajax({
     type : 'GET',
-    url : `http://localhost:8080/post/author/${post_id}`,
+    url : `http://localhost:8080/post/author/${post['id']}`,
     async : false,
     success : (result) => {
       author = result;
@@ -729,7 +723,8 @@ function postDiv(post) {
         .attr('class','post-header')
         .append(
           // post author image and name
-          postAuthor(post['id']),
+          postAuthor(post),
+          postGroup(post),
           // time when post was created
           $('<span/>')
             .attr('class','post-time')
@@ -754,6 +749,7 @@ function postDiv(post) {
           commentButton(post)
         )
     );
+    // add comments container if post contains any picture
     if (post['picture'] !== null) {
       postDiv.append(commentsContainer(post));
     }
@@ -765,13 +761,48 @@ function timeConverter(time) {
       .toLocaleTimeString()
       .replace(/:\d+ /, ' ');
 }
+function postGroup(post) {
+  let groupDiv;
+  if (post['group'] !== null) {
+    groupDiv = $('<div/>')
+      .attr('class','post-group')
+      .append(
+        // separator
+        $('<i/>')
+          .attr('class','fas fa-chevron-right')
+          .css({
+            'color': '#F44242',
+            'float': 'left',
+            'line-height': '30px',
+            'padding-right': '15px'
+          }),
+        $('<div/>')
+          .attr('class','post-author-image')
+          .append(
+            $('<img/>')
+              .attr(
+                'src',`http://localhost:8080/images/${post['group']['profilePicture']['id']}`
+              )
+          ),
+        $('<span/>')
+          .html(post['group']['name'])
+          .css({
+            'line-height':'200%',
+            'margin-left':'10px'
+          })
+      )
+      .click(() => renderGroupContainer(post['group']));  
+  }
+  return groupDiv;
+  
+}
 // post author image and username
-function postAuthor(post_id) {
-  author = getPostAuthor(post_id);
+function postAuthor(post) {
+  author = getPostAuthor(post);
   return [
     // username
     $('<span/>')
-      .html(author['name'])
+      .html(`${author['name']} ${author['surname']}`)
       .css({
         'line-height':'200%',
         'margin-left':'10px'
@@ -836,8 +867,7 @@ function sendLike(post,action) {
       if (feedOpened) {
         getFeedPosts();
       }else if (groupOpened){
-        getGroupData(groupData);
-        appendPosts(groupData['posts']);
+        getGroupPosts(groupData, (posts) => appendPosts(posts));
       }
     }
   });
@@ -904,7 +934,7 @@ function postComments(post) {
         // comment elements
         .append(
           // author
-          postAuthor(comment['id']),
+          postAuthor(comment),
           // content
           $('<p/>')
             .css({
