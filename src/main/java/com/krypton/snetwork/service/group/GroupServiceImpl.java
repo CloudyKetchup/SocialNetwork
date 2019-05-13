@@ -3,8 +3,7 @@ package com.krypton.snetwork.service.group;
 import com.krypton.snetwork.model.common.Post;
 import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.user.User;
-import com.krypton.snetwork.repository.GroupRepository;
-import com.krypton.snetwork.repository.UserRepository;
+import com.krypton.snetwork.repository.*;
 import com.krypton.snetwork.service.image.ImageServiceImpl;
 import com.krypton.snetwork.service.user.UserServiceImpl;
 import org.springframework.stereotype.Service;
@@ -18,16 +17,16 @@ public class GroupServiceImpl implements GroupService {
 	private final UserRepository userRepository;
 
 	private final GroupRepository groupRepository;
+
+	private final PostRepository postRepository;
 	
 	private final UserServiceImpl userService;
 
-	private final ImageServiceImpl imageService;
-
-	public GroupServiceImpl(UserRepository userRepository, GroupRepository groupRepository, UserServiceImpl userService, ImageServiceImpl imageService) {
+	public GroupServiceImpl(UserRepository userRepository, GroupRepository groupRepository, PostRepository postRepository, UserServiceImpl userService) {
 		this.userRepository  = userRepository;
 		this.groupRepository = groupRepository;
+		this.postRepository  = postRepository;
 		this.userService  	 = userService;
-		this.imageService 	 = imageService;
 	}
 
 	@Override
@@ -85,8 +84,13 @@ public class GroupServiceImpl implements GroupService {
 	@Override
 	public void addPost(Long groupId, Post post) {
 		Group group = getGroup(groupId);
+		// add group to post as parent
+		post.setGroup(group);
+		// update post in database
+		postRepository.save(post);
+		// add post to group
 		group.getPosts().add(post);
-		// update user with post
+		// update group with post
 		groupRepository.save(group);
 	}
 	
@@ -102,23 +106,5 @@ public class GroupServiceImpl implements GroupService {
 		assert group.isPresent();
 
 		return group.get();
-	}
-
-	@Override
-	public void saveProfileAndBackgroundPicture(Group group, MultipartFile profilePicture, MultipartFile background) {
-		// save profile picture for group
-		imageService.insertProfilePicture(group.getName(), profilePicture);
-		
-		// save background picture for group
-		imageService.insertBackground(group.getName(), background);
-		
-		// set group profile picture
-		group.setProfilePicture(imageService.getProfilePicture(group.getName()));
-		
-		// set group background picture
-		group.setBackgroundPicture(imageService.getBackground(group.getName()));
-		
-		// update group
-		groupRepository.save(group);
 	}
 }

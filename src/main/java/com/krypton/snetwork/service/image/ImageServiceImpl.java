@@ -1,7 +1,9 @@
 package com.krypton.snetwork.service.image;
 
 import com.krypton.snetwork.model.common.Post;
+import com.krypton.snetwork.model.group.Group;
 import com.krypton.snetwork.model.image.Image;
+import com.krypton.snetwork.repository.GroupRepository;
 import com.krypton.snetwork.repository.ImageRepository;
 import com.krypton.snetwork.service.common.Tools;
 import net.coobird.thumbnailator.Thumbnails;
@@ -20,10 +22,13 @@ public class ImageServiceImpl implements ImageService {
 
 	private final ImageRepository imageRepository;
 
+	private final GroupRepository groupRepository;
+
 	private final Tools tools;
 
-	public ImageServiceImpl(ImageRepository imageRepository, Tools tools) {
+	public ImageServiceImpl(ImageRepository imageRepository, GroupRepository groupRepository, Tools tools) {
 		this.imageRepository = imageRepository;
+		this.groupRepository = groupRepository;
 		this.tools = tools;
 	}
 
@@ -183,5 +188,23 @@ public class ImageServiceImpl implements ImageService {
 		assert bufferedImage != null;
 
 		return bufferedImage.getWidth() > width && bufferedImage.getHeight() > height;
+	}
+
+	@Override
+	public void saveProfileAndBackgroundPicture(Group group, MultipartFile profilePicture, MultipartFile background) {
+		// save profile picture for group
+		insertProfilePicture(group.getName(), profilePicture);
+
+		// save background picture for group
+		insertBackground(group.getName(), background);
+
+		// set group profile picture
+		group.setProfilePicture(getProfilePicture(group.getName()));
+
+		// set group background picture
+		group.setBackgroundPicture(getBackground(group.getName()));
+
+		// update group
+		groupRepository.save(group);
 	}
 }

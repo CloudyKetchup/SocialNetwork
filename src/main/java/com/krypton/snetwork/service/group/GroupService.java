@@ -79,12 +79,4 @@ public interface GroupService {
 	 */
 	
 	Group getGroup(Long id);
-	/**
-	 * set {@link Group} profile and background {@link Image}
-	 *
-	 * @param group 			{@link Group}
-	 * @param profilePicture	profile picture file
-	 * @param background		background picture file
-	 */
-	void saveProfileAndBackgroundPicture(Group group, MultipartFile profilePicture, MultipartFile background);
 }
